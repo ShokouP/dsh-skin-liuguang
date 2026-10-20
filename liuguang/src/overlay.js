@@ -16,6 +16,15 @@ const PRESETS = [
   { id: 'graphite', label: '石墨', accent: '#8d97a8', accent2: '#c3cbd8' },
 ]
 
+/** Spot inks for the constructivist language (print shop palette). */
+const SPOTS = [
+  { id: 'red', label: '血红', color: '#c0301c' },
+  { id: 'vermilion', label: '朱砂', color: '#d4542f' },
+  { id: 'ochre', label: '赭石', color: '#b5721f' },
+  { id: 'prussian', label: '普鲁士蓝', color: '#1f4e79' },
+  { id: 'ink', label: '墨', color: '#141414' },
+]
+
 /** Expression pack: sprites served from /liuguang/pet/<name>.png. */
 const EXPRESSIONS = {
   wave: { label: '招呼', lines: ['在的～', '今天也要加油哦', '需要我做什么吗？'] },
@@ -37,6 +46,14 @@ const DEFAULT_KNOBS = {
   glass: 1,
   motion: 'full',
   radius: 24,
+  // Constructivist print-shop knobs (independent of the glass material knobs).
+  paper: 'cream',
+  spot: 'red',
+  grid: 'fine',
+  poster: '01',
+  stamp: 'on',
+  motif: 'ring',
+  tracking: 'normal',
   petScale: 1,
   chatty: 2,
   petVisible: true,
@@ -85,6 +102,13 @@ function normalizeKnobs(input, fallback) {
     glass: clamp(source.glass, 0.2, 1, base.glass),
     motion: pick(source.motion, ['full', 'subtle', 'none'], base.motion),
     radius: Math.round(clamp(source.radius, 12, 32, base.radius)),
+    paper: pick(source.paper, ['cream', 'ash', 'kraft', 'blue'], base.paper),
+    spot: pick(source.spot, ['red', 'vermilion', 'ochre', 'prussian', 'ink'], base.spot),
+    grid: pick(source.grid, ['none', 'fine', 'bold'], base.grid),
+    poster: pick(source.poster, ['off', '01', '02', '03'], base.poster),
+    stamp: pick(source.stamp, ['on', 'off'], base.stamp),
+    motif: pick(source.motif, ['ring', 'diagonal', 'none'], base.motif),
+    tracking: pick(source.tracking, ['tight', 'normal', 'wide'], base.tracking),
     petScale: clamp(source.petScale, 0.8, 1.4, base.petScale),
     chatty: Math.round(clamp(source.chatty, 0, 2, base.chatty)),
     petVisible: typeof source.petVisible === 'boolean' ? source.petVisible : base.petVisible,
@@ -107,6 +131,17 @@ function applyKnobs(knobs) {
   // Drift opacity stays CSS-owned so each base style keeps its own glow level;
   // `data-lg-motion` scales it instead of overwriting it.
   root.setAttribute('data-lg-motion', knobs.motion)
+
+  // Constructivist print-shop axes: paper stock, spot ink, grid, poster number,
+  // corner stamp, geometric motif and display tracking. All CSS-owned.
+  root.setAttribute('data-lg-paper', knobs.paper)
+  root.setAttribute('data-lg-spot', knobs.spot)
+  root.setAttribute('data-lg-grid', knobs.grid)
+  root.setAttribute('data-lg-poster', knobs.poster)
+  root.setAttribute('data-lg-stamp', knobs.stamp)
+  root.setAttribute('data-lg-motif', knobs.motif)
+  root.setAttribute('data-lg-tracking', knobs.tracking)
+  root.style.setProperty('--lg-no', '"' + (knobs.poster === 'off' ? '01' : knobs.poster) + '"')
 }
 
 function PetWhale() {
@@ -271,17 +306,45 @@ function createOverlay(config) {
       }, label)
     }
 
-    const lookTab = React.createElement('div', { className: 'lg-section' },
-      React.createElement('div', { className: 'lg-inline' },
-        React.createElement('span', null, '设计语言'),
-        React.createElement('div', { className: 'lg-segment liuguang-language' },
-          [['glass', '液态玻璃'], ['constructivist', '构成主义']].map(function (pair) {
+    // A compact "label + segmented control" row, shared by both languages.
+    const segRow = function (label, options, current, toPatch) {
+      return React.createElement('div', { className: 'lg-inline' },
+        React.createElement('span', { className: 'lg-row-label' }, label),
+        React.createElement('div', { className: 'lg-segment' },
+          options.map(function (pair) {
             return React.createElement('button', {
               key: pair[0],
-              className: 'lg-seg' + (knobs.language === pair[0] ? ' is-active' : ''),
-              onClick: function () { patch({ language: pair[0] }) },
+              className: 'lg-seg' + (current === pair[0] ? ' is-active' : ''),
+              onClick: function () { patch(toPatch(pair[0])) },
             }, pair[1])
-          }))),
+          })))
+    }
+
+    const languageRow = React.createElement('div', { className: 'lg-inline' },
+      React.createElement('span', { className: 'lg-row-label' }, '设计语言'),
+      React.createElement('div', { className: 'lg-segment' },
+        [['glass', '液态玻璃'], ['constructivist', '构成主义']].map(function (pair) {
+          return React.createElement('button', {
+            key: pair[0],
+            className: 'lg-seg' + (knobs.language === pair[0] ? ' is-active' : ''),
+            onClick: function () { patch({ language: pair[0] }) },
+          }, pair[1])
+        })))
+
+    const packsRow = packs.length > 0 && React.createElement('div', { className: 'lg-packs' },
+      React.createElement('span', { className: 'lg-packs-label' }, '皮肤包'),
+      React.createElement('div', { className: 'lg-packs-list' },
+        [{ id: '', name: '不使用' }].concat(packs).map(function (pack) {
+          return React.createElement('button', {
+            key: pack.id === '' ? '__none' : pack.id,
+            className: 'lg-pack-chip' + (knobs.pack === pack.id ? ' is-active' : ''),
+            title: pack.desc || pack.name,
+            onClick: function () { patch({ pack: pack.id }) },
+          }, pack.name)
+        })))
+
+    // Glass controls: material knobs (blur / translucency / radius / motion).
+    const glassControls = React.createElement('div', { className: 'lg-section' },
       React.createElement('div', { className: 'lg-segment' },
         [['graphite', '墨银'], ['ocean', '深海'], ['sand', '暖砂']].map(function (pair) {
           return React.createElement('button', {
@@ -290,17 +353,6 @@ function createOverlay(config) {
             onClick: function () { patch({ style: pair[0] }) },
           }, pair[1])
         })),
-      packs.length > 0 && React.createElement('div', { className: 'lg-packs' },
-        React.createElement('span', { className: 'lg-packs-label' }, '皮肤包'),
-        React.createElement('div', { className: 'lg-packs-list' },
-          [{ id: '', name: '不使用' }].concat(packs).map(function (pack) {
-            return React.createElement('button', {
-              key: pack.id === '' ? '__none' : pack.id,
-              className: 'lg-pack-chip' + (knobs.pack === pack.id ? ' is-active' : ''),
-              title: pack.desc || pack.name,
-              onClick: function () { patch({ pack: pack.id }) },
-            }, pack.name)
-          }))),
       React.createElement('div', { className: 'lg-swatches' },
         PRESETS.map(function (preset) {
           return React.createElement('button', {
@@ -333,14 +385,40 @@ function createOverlay(config) {
           className: 'lg-range', type: 'range', min: '12', max: '32', step: '1', value: knobs.radius,
           onChange: function (event) { patch({ radius: event.target.value }) },
         })),
-      React.createElement('div', { className: 'lg-segment' },
-        [['full', '灵动'], ['subtle', '微光'], ['none', '静止']].map(function (pair) {
-          return React.createElement('button', {
-            key: pair[0],
-            className: 'lg-seg' + (knobs.motion === pair[0] ? ' is-active' : ''),
-            onClick: function () { patch({ motion: pair[0] }) },
-          }, pair[1])
-        })))
+      segRow('动效', [['full', '灵动'], ['subtle', '微光'], ['none', '静止']], knobs.motion, function (value) { return { motion: value } }))
+
+    // Constructivist controls: print-shop decisions, not material knobs.
+    const groupLabel = function (text) {
+      return React.createElement('span', { className: 'lg-group-label' }, text)
+    }
+    const posterControls = React.createElement('div', { className: 'lg-section' },
+      groupLabel('版面'),
+      segRow('纸张', [['cream', '米白'], ['ash', '灰白'], ['kraft', '牛皮'], ['blue', '蓝图纸']], knobs.paper, function (value) { return { paper: value } }),
+      React.createElement('div', { className: 'lg-inline' },
+        React.createElement('span', { className: 'lg-row-label' }, '套色'),
+        React.createElement('div', { className: 'lg-swatches lg-swatches-inline' },
+          SPOTS.map(function (spot) {
+            return React.createElement('button', {
+              key: spot.id,
+              className: 'lg-swatch lg-swatch-flat' + (knobs.spot === spot.id ? ' is-active' : ''),
+              title: spot.label,
+              'aria-label': spot.label,
+              style: { background: spot.color },
+              onClick: function () { patch({ spot: spot.id }) },
+            })
+          }))),
+      segRow('网格', [['none', '无'], ['fine', '细'], ['bold', '粗']], knobs.grid, function (value) { return { grid: value } }),
+      groupLabel('装饰'),
+      segRow('编号', [['off', '无'], ['01', '01'], ['02', '02'], ['03', '03']], knobs.poster, function (value) { return { poster: value } }),
+      segRow('印章', [['on', '开'], ['off', '关']], knobs.stamp, function (value) { return { stamp: value } }),
+      segRow('母题', [['ring', '圆'], ['diagonal', '斜线'], ['none', '无']], knobs.motif, function (value) { return { motif: value } }),
+      groupLabel('字体'),
+      segRow('字距', [['tight', '紧'], ['normal', '标准'], ['wide', '宽']], knobs.tracking, function (value) { return { tracking: value } }))
+
+    const lookTab = React.createElement('div', { className: 'lg-section' },
+      languageRow,
+      packsRow,
+      knobs.language === 'constructivist' ? posterControls : glassControls)
 
     const petTab = React.createElement('div', { className: 'lg-section' },
       React.createElement('div', { className: 'lg-inline' },

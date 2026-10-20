@@ -1524,6 +1524,10 @@ html[data-lg-language='constructivist'] body [data-composer-card] {
   border-radius: 2px;
   background-image: none;
   background-color: var(--dsw-specific-input-major);
+  /* The red edge band and the corner stamp are absolutely positioned children:
+     without a positioning context they anchor to the composer seat and stick
+     out above/below the card. */
+  position: relative;
   box-shadow:
     inset 0 0 0 2px var(--lg-ink),
     10px 10px 0 0 var(--lg-ink);
@@ -1826,8 +1830,9 @@ html[data-lg-language='constructivist'] body {
   --dsw-specific-bubble-highlight: color-mix(in srgb, var(--lg-ochre) 20%, var(--dsw-alias-bg-layer-1));
 }
 
-/* Hard focus language: no rounded glow, just a red outline. */
-html[data-lg-language='constructivist'] body :focus-visible {
+/* Hard focus language: no rounded glow, just a red outline.
+   Scoped to real controls so dialogs and headings do not get boxed. */
+html[data-lg-language='constructivist'] body :is(a, button, input, textarea, select, summary, [role='button'], [contenteditable='true']):focus-visible {
   outline: 3px solid var(--lg-red);
   outline-offset: 2px;
 }
@@ -1836,15 +1841,250 @@ html[data-lg-language='constructivist'] body :focus-visible {
 html[data-lg-language='constructivist'] body [data-slot='sidebar'] button,
 html[data-lg-language='constructivist'] body [data-window-drag] button,
 html[data-lg-language='constructivist'] body [data-conversation-header-corner] button,
-html[data-lg-language='constructivist'] body [data-conversation-header-leading] button {
+html[data-lg-language='constructivist'] body [data-conversation-header-leading] button,
+html[data-lg-language='constructivist'] body [data-composer-card] button {
   border-radius: 2px;
 }
 html[data-lg-language='constructivist'] body [data-slot='sidebar'] button:hover,
-html[data-lg-language='constructivist'] body [data-window-drag] button:hover {
+html[data-lg-language='constructivist'] body [data-window-drag] button:hover,
+html[data-lg-language='constructivist'] body [data-composer-card] button:hover {
   background-color: color-mix(in srgb, var(--lg-red) 16%, transparent);
 }
 
 /* The title bar sits on a ruled line instead of floating on glass. */
 html[data-lg-language='constructivist'] body [data-window-drag] {
   border-bottom: 2px solid color-mix(in srgb, var(--lg-ink) 30%, transparent);
+}
+
+/* =====================================================================
+   Constructivism v3 — print-shop options.
+   The constructivist language owns its own knobs: paper stock, spot ink,
+   grid density, poster number, corner stamp, geometric motif and display
+   tracking. None of the glass material knobs apply here.
+   ===================================================================== */
+
+/* --- paper stock -------------------------------------------------- */
+html[data-lg-language='constructivist'][data-lg-paper='ash'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #e9e7e2;
+  --dsw-alias-bg-layer-1: #f4f3ef;
+  --dsw-alias-bg-layer-2: #e9e7e2;
+  --dsw-alias-bg-layer-3: #fbfaf7;
+  --dsw-alias-bg-module-platform: #dedbd4;
+  --dsw-specific-sidebar-fill: #dedbd4;
+  --dsw-specific-input-major: #f4f3ef;
+  --dsw-specific-bubble: #f4f3ef;
+  --dsw-alias-label-primary: #121110;
+  --dsw-alias-label-secondary: #3d3a34;
+  --dsw-alias-label-tertiary: #6d6a62;
+  --lg-paper: #f4f3ef;
+}
+html[data-lg-language='constructivist'][data-lg-paper='ash'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #151517;
+  --dsw-alias-bg-layer-1: #1d1c1f;
+  --dsw-alias-bg-layer-2: #242327;
+  --dsw-alias-bg-module-platform: #1a191c;
+  --dsw-specific-sidebar-fill: #111113;
+  --dsw-specific-input-major: #1f1e21;
+  --dsw-specific-bubble: #242327;
+  --dsw-alias-label-primary: #f1efea;
+  --dsw-alias-label-secondary: #cbc7bf;
+  --dsw-alias-label-tertiary: #9a968d;
+  --lg-paper: #1f1e21;
+  --lg-ink: #f1efea;
+}
+html[data-lg-language='constructivist'][data-lg-paper='kraft'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #e2cda6;
+  --dsw-alias-bg-layer-1: #eedbb8;
+  --dsw-alias-bg-layer-2: #e2cda6;
+  --dsw-alias-bg-layer-3: #f4e6c9;
+  --dsw-alias-bg-module-platform: #d6bf95;
+  --dsw-specific-sidebar-fill: #d6bf95;
+  --dsw-specific-input-major: #eedbb8;
+  --dsw-specific-bubble: #eedbb8;
+  --dsw-alias-label-primary: #221a10;
+  --dsw-alias-label-secondary: #4a3a26;
+  --dsw-alias-label-tertiary: #7a6448;
+  --lg-paper: #eedbb8;
+}
+html[data-lg-language='constructivist'][data-lg-paper='kraft'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #1b1510;
+  --dsw-alias-bg-layer-1: #241c14;
+  --dsw-alias-bg-layer-2: #2c2218;
+  --dsw-alias-bg-module-platform: #201810;
+  --dsw-specific-sidebar-fill: #150f0a;
+  --dsw-specific-input-major: #271e15;
+  --dsw-specific-bubble: #2c2218;
+  --dsw-alias-label-primary: #f2e6cf;
+  --dsw-alias-label-secondary: #cdbb9d;
+  --dsw-alias-label-tertiary: #9c8a6f;
+  --lg-paper: #271e15;
+  --lg-ink: #f2e6cf;
+}
+html[data-lg-language='constructivist'][data-lg-paper='blue'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #dde6ee;
+  --dsw-alias-bg-layer-1: #e9f0f6;
+  --dsw-alias-bg-layer-2: #dde6ee;
+  --dsw-alias-bg-layer-3: #f2f7fb;
+  --dsw-alias-bg-module-platform: #cfdae5;
+  --dsw-specific-sidebar-fill: #cfdae5;
+  --dsw-specific-input-major: #e9f0f6;
+  --dsw-specific-bubble: #e9f0f6;
+  --dsw-alias-label-primary: #101820;
+  --dsw-alias-label-secondary: #33506a;
+  --dsw-alias-label-tertiary: #5f7590;
+  --lg-paper: #e9f0f6;
+}
+html[data-lg-language='constructivist'][data-lg-paper='blue'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #0f161c;
+  --dsw-alias-bg-layer-1: #16212a;
+  --dsw-alias-bg-layer-2: #1b2833;
+  --dsw-alias-bg-module-platform: #131c24;
+  --dsw-specific-sidebar-fill: #0a1015;
+  --dsw-specific-input-major: #182430;
+  --dsw-specific-bubble: #1b2833;
+  --dsw-alias-label-primary: #e6eef5;
+  --dsw-alias-label-secondary: #b9c9d6;
+  --dsw-alias-label-tertiary: #8b9daa;
+  --lg-paper: #182430;
+  --lg-ink: #e6eef5;
+}
+
+/* --- spot ink ----------------------------------------------------- */
+/* Scrollbars follow the spot ink, not the glass accent. */
+html[data-lg-language='constructivist'] body {
+  --dsw-alias-scrollbar-bg-l1: color-mix(in srgb, var(--lg-ink) 22%, transparent);
+  --dsw-alias-scrollbar-hover-l1: var(--lg-red);
+  --dsw-alias-scrollbar-bg-l2: color-mix(in srgb, var(--lg-ink) 26%, transparent);
+  --dsw-alias-scrollbar-hover-l2: var(--lg-red);
+}
+html[data-lg-language='constructivist'][data-lg-spot='vermilion'] { --lg-red: #d4542f; --lg-accent: #d4542f; --lg-accent-fill: #a93c1d; }
+html[data-lg-language='constructivist'][data-lg-spot='ochre'] { --lg-red: #b5721f; --lg-accent: #b5721f; --lg-accent-fill: #8a5413; }
+html[data-lg-language='constructivist'][data-lg-spot='prussian'] { --lg-red: #1f4e79; --lg-accent: #1f4e79; --lg-accent-fill: #143655; }
+html[data-lg-language='constructivist'][data-lg-spot='ink'] { --lg-red: #141414; --lg-accent: #141414; --lg-accent-fill: #000000; }
+html[data-lg-language='constructivist'][data-lg-spot='vermilion'] body[data-ds-dark-theme] { --lg-red: #e8734f; --lg-accent: #e8734f; }
+html[data-lg-language='constructivist'][data-lg-spot='ochre'] body[data-ds-dark-theme] { --lg-red: #d99a3a; --lg-accent: #d99a3a; }
+html[data-lg-language='constructivist'][data-lg-spot='prussian'] body[data-ds-dark-theme] { --lg-red: #5d9bcc; --lg-accent: #5d9bcc; }
+html[data-lg-language='constructivist'][data-lg-spot='ink'] body[data-ds-dark-theme] { --lg-red: #e8dfcd; --lg-accent: #e8dfcd; --lg-accent-fill: #f6efe0; }
+
+/* --- grid density ------------------------------------------------- */
+html[data-lg-language='constructivist'][data-lg-grid='none'] body {
+  background-image: none;
+}
+html[data-lg-language='constructivist'][data-lg-grid='bold'] body {
+  background-image:
+    repeating-linear-gradient(0deg,
+      transparent 0 95px,
+      color-mix(in srgb, var(--lg-ink) 10%, transparent) 95px 96px),
+    repeating-linear-gradient(90deg,
+      transparent 0 95px,
+      color-mix(in srgb, var(--lg-ink) 7%, transparent) 95px 96px);
+}
+
+/* --- poster number ------------------------------------------------ */
+html[data-lg-language='constructivist'] .lg-layer::before {
+  content: var(--lg-no, '01');
+}
+html[data-lg-language='constructivist'][data-lg-poster='off'] .lg-layer::before {
+  display: none;
+}
+
+/* --- corner stamp ------------------------------------------------- */
+html[data-lg-language='constructivist'][data-lg-stamp='off'] body [data-composer-card]::after {
+  display: none;
+}
+
+/* --- geometric motif --------------------------------------------- */
+html[data-lg-language='constructivist'][data-lg-motif='ring'] .lg-layer::after {
+  content: '';
+  position: fixed;
+  left: 2vw;
+  bottom: 7vh;
+  width: min(30vh, 22vw);
+  aspect-ratio: 1;
+  border: 3px solid var(--lg-red);
+  border-radius: 50%;
+  opacity: 0.35;
+  z-index: -1;
+  pointer-events: none;
+}
+html[data-lg-language='constructivist'][data-lg-motif='diagonal'] .lg-layer::after {
+  content: '';
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 32vw;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-linear-gradient(112deg,
+    color-mix(in srgb, var(--lg-red) 8%, transparent) 0 14px,
+    transparent 14px 44px);
+}
+html[data-lg-language='constructivist'][data-lg-motif='none'] .lg-layer::after {
+  display: none;
+}
+
+/* --- display tracking -------------------------------------------- */
+html[data-lg-language='constructivist'][data-lg-tracking='tight'] body [class*='titleGroup'] > span:not([class*='previewBadge']) {
+  letter-spacing: -0.02em;
+}
+html[data-lg-language='constructivist'][data-lg-tracking='wide'] body [class*='titleGroup'] > span:not([class*='previewBadge']) {
+  letter-spacing: 0.08em;
+}
+
+/* --- panel rows for the print knobs ------------------------------ */
+.lg-row-label {
+  flex: 0 0 auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+.lg-row-value {
+  flex: 0 0 auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.lg-hint {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+.lg-swatch-flat {
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 22%, transparent);
+}
+html[data-lg-language='constructivist'] .lg-inline {
+  gap: 8px;
+  align-items: center;
+}
+html[data-lg-language='constructivist'] .lg-segment {
+  flex: 1 1 auto;
+  display: flex;
+}
+html[data-lg-language='constructivist'] .lg-seg {
+  flex: 1 1 0;
+  padding: 4px 0;
+  font-size: 11px;
+}
+.lg-group-label {
+  margin: 6px 0 1px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.lg-swatches-inline {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.lg-swatches-inline .lg-swatch {
+  width: 20px;
+  height: 20px;
+}
+html[data-lg-language='constructivist'] .lg-group-label {
+  border-left: 3px solid var(--lg-red);
+  padding-left: 6px;
+  color: var(--dsw-alias-label-secondary);
+}
+html[data-lg-language='constructivist'] .lg-swatch {
+  width: 24px;
+  height: 24px;
 }
