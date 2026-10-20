@@ -1,0 +1,59 @@
+# Publish dsh-theme-liuguang with npm trusted publishing (OIDC).
+#
+# No long-lived npm token and no OTP prompt: the job proves its identity with
+# the GitHub OIDC token, which npm maps to the trusted publisher configured on
+# the package (npmjs.com → package → Settings → Trusted publishing → GitHub
+# Actions: owner ShokouP, repo dsh-theme-liuguang, workflow publish.yml).
+#
+# Release flow:
+#   npm version patch --no-git-tag-version   (or edit package.json)
+#   git commit -am "release: vX.Y.Z"
+#   git tag vX.Y.Z && git push origin main --tags
+# The tag push starts this workflow, which verifies tag == package version,
+# publishes with provenance and attaches the tarball to a GitHub Release.
+name: publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          echo "tag=$tag package=$pkg"
+          test "$tag" = "$pkg"
+
+      - name: Publish to npm (trusted publishing, provenance)
+        run: npm publish --access public --provenance
+
+      - name: Verify
+        run: npm view dsh-theme-liuguang version dist-tags
+
+      - name: Attach tarball to a GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          npm pack --silent
+          gh release create "${GITHUB_REF_NAME}" ./*.tgz \
+            --title "Liuguang ${GITHUB_REF_NAME}" \
+            --generate-notes
