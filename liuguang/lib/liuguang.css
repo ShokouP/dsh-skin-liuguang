@@ -2331,3 +2331,81 @@ html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
   letter-spacing: 0.1em;
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------
+   Constructivism v6 — the text itself.
+   Rendered markdown gets print-shop chrome: ruled code blocks, red-link
+   accents, squared tables and a quote rule that means "quoted".
+   --------------------------------------------------------------------- */
+html[data-lg-language='constructivist'] body [data-conversation-content] :is(h1, h2, h3, h4) {
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] p {
+  line-height: 1.72;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] a {
+  color: var(--lg-red);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] :is(ul, ol) > li::marker {
+  color: var(--lg-red);
+  font-weight: 700;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] blockquote {
+  margin: 6px 0;
+  padding: 2px 0 2px 12px;
+  border-left: 4px solid var(--lg-red);
+  color: var(--dsw-alias-label-secondary);
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] hr {
+  height: 0;
+  margin: 14px 0;
+  border: 0;
+  border-top: 2px solid var(--lg-ink);
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] code {
+  padding: 1px 4px;
+  border: 1px solid color-mix(in srgb, var(--lg-ink) 24%, transparent);
+  border-radius: 2px;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.92em;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] pre {
+  padding: 10px 12px;
+  border: 2px solid var(--lg-ink);
+  border-radius: 2px;
+  box-shadow: 6px 6px 0 0 var(--lg-ink);
+  background-color: var(--dsw-alias-markdown-code-block, var(--dsw-alias-bg-module-platform));
+  overflow: auto;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.94em;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] :is(th, td) {
+  padding: 3px 9px;
+  border: 1px solid color-mix(in srgb, var(--lg-ink) 30%, transparent);
+}
+html[data-lg-language='constructivist'] body [data-conversation-content] th {
+  background-color: var(--lg-ink);
+  color: var(--lg-paper);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Numerals in the metric margin read as a spec column. */
+.lg-mark-margin .lg-margin-num {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}

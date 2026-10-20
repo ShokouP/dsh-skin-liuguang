@@ -199,6 +199,7 @@ function applyKnobs(knobs) {
   root.setAttribute('data-lg-size', knobs.size)
   root.setAttribute('data-lg-stamp', knobs.stamp)
   root.setAttribute('data-lg-state', knobs.state)
+  root.setAttribute('data-lg-poster', knobs.poster)
   root.setAttribute('data-lg-metrics', knobs.metrics)
   const fixed = knobs.poster === '01' || knobs.poster === '02' || knobs.poster === '03' ? knobs.poster : '01'
   root.style.setProperty('--lg-no', '"' + fixed + '"')
@@ -656,20 +657,22 @@ function createOverlay(config) {
 
     // Run metrics print as one margin column to the left of the composer:
     // right-aligned typeset lines with a red rule facing the input box, so no
-    // numbers are scattered across the corners.
+    // numbers are scattered across the corners. Unknown values are dropped
+    // instead of printing dashes.
     const marginRow = function (value, label, key) {
       return React.createElement('div', { className: 'lg-margin-row', key: key },
-        React.createElement('span', { className: 'lg-margin-num' }, value || '—'),
+        React.createElement('span', { className: 'lg-margin-num' }, value),
         React.createElement('span', { className: 'lg-margin-label' }, label))
     }
-    const margin = !open && knobs.language === 'constructivist' && knobs.metrics === 'on' &&
+    const marginRows = []
+    if (metrics.steps) marginRows.push(marginRow(metrics.steps, '步 · ' + (metrics.turns || '—') + ' 轮', 'steps'))
+    if (metrics.tps) marginRows.push(marginRow(metrics.tps, 'tok/s', 'tps'))
+    if (metrics.total) marginRows.push(marginRow(metrics.total, 'tok', 'total'))
+    if (metrics.cache) marginRows.push(marginRow(metrics.cache + '%', '缓存命中', 'cache'))
+    if (metrics.ctx) marginRows.push(marginRow(metrics.ctx + '%', '上下文', 'ctx'))
+    const margin = !open && knobs.language === 'constructivist' && knobs.metrics === 'on' && marginRows.length > 0 &&
       React.createElement('div', { className: 'lg-marks', 'aria-hidden': 'true' },
-        React.createElement('div', { className: 'lg-mark-margin' },
-          marginRow(metrics.steps, '步 · ' + (metrics.turns || '—') + ' 轮', 'steps'),
-          marginRow(metrics.tps, 'tok/s', 'tps'),
-          marginRow(metrics.total, 'tok', 'total'),
-          marginRow(metrics.cache ? metrics.cache + '%' : '', '缓存命中', 'cache'),
-          metrics.ctx ? marginRow(metrics.ctx + '%', '上下文', 'ctx') : null))
+        React.createElement('div', { className: 'lg-mark-margin' }, marginRows))
 
     return React.createElement('div', { className: 'lg-layer' },
       margin,
