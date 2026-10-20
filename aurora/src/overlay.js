@@ -28,8 +28,9 @@ const EXPRESSIONS = {
 }
 
 const DEFAULT_KNOBS = {
-  accent: '#4fb59a',
-  accent2: '#8ee0c8',
+  style: 'graphite',
+  accent: '#c8b48a',
+  accent2: '#eadfc8',
   blur: 26,
   glass: 1,
   motion: 'full',
@@ -71,6 +72,7 @@ function normalizeKnobs(input, fallback) {
   const hex = (value, previous) => (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : previous)
   const pick = (value, allowed, previous) => (allowed.indexOf(value) >= 0 ? value : previous)
   return {
+    style: pick(source.style, ['graphite', 'ocean', 'sand'], base.style),
     accent: hex(source.accent, base.accent),
     accent2: hex(source.accent2, base.accent2),
     blur: Math.round(clamp(source.blur, 0, 60, base.blur)),
@@ -86,6 +88,7 @@ function normalizeKnobs(input, fallback) {
 /** Push knobs into the document as custom properties. */
 function applyKnobs(knobs) {
   const root = document.documentElement
+  root.setAttribute('data-aurora-style', knobs.style)
   root.style.setProperty('--aurora-accent', knobs.accent)
   root.style.setProperty('--aurora-accent-2', knobs.accent2)
   root.style.setProperty('--aurora-glass-blur', knobs.blur + 'px')
@@ -94,7 +97,8 @@ function applyKnobs(knobs) {
   root.style.setProperty('--aurora-pet-scale', String(knobs.petScale))
   root.style.setProperty('--aurora-anim', knobs.motion === 'none' ? 'none' : 'aurora-drift')
   root.style.setProperty('--aurora-drift', knobs.motion === 'subtle' ? '96s' : '54s')
-  root.style.setProperty('--aurora-drift-opacity', knobs.motion === 'none' ? '0' : knobs.motion === 'subtle' ? '0.3' : '0.42')
+  // Drift opacity stays CSS-owned so each base style keeps its own glow level;
+  // `data-aurora-motion` scales it instead of overwriting it.
   root.setAttribute('data-aurora-motion', knobs.motion)
 }
 
@@ -232,6 +236,14 @@ function createOverlay(config) {
     }
 
     const lookTab = React.createElement('div', { className: 'aurora-section' },
+      React.createElement('div', { className: 'aurora-segment' },
+        [['graphite', '墨银'], ['ocean', '深海'], ['sand', '暖砂']].map(function (pair) {
+          return React.createElement('button', {
+            key: pair[0],
+            className: 'aurora-seg' + (knobs.style === pair[0] ? ' is-active' : ''),
+            onClick: function () { patch({ style: pair[0] }) },
+          }, pair[1])
+        })),
       React.createElement('div', { className: 'aurora-swatches' },
         PRESETS.map(function (preset) {
           return React.createElement('button', {

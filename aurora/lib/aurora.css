@@ -1041,3 +1041,121 @@ html body [data-composer-card] {
     display: none;
   }
 }
+
+/* =====================================================================
+   Layer 7: base styles (墨银 / 深海 / 暖砂).
+   `html[data-aurora-style] body…` outranks the default `html body` blocks,
+   so picking a style re-tints every surface without touching the accent.
+   ===================================================================== */
+
+html[data-aurora-style='graphite'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #0a0a0b;
+  --dsw-alias-bg-layer-1: #121213;
+  --dsw-alias-bg-layer-2: #171718;
+  --dsw-alias-bg-layer-3: #1c1c1e;
+  --dsw-alias-bg-overlay: #18181a;
+  --dsw-alias-bg-module-platform: #141416;
+  --dsw-alias-bg-multi-select: #1a1a1c;
+  --dsw-specific-sidebar-fill: #0e0e10;
+  --dsw-specific-input-major: #141416;
+  --dsw-specific-selector: #1a1a1c;
+  --dsw-specific-tip: #1a1a1c;
+  --dsw-specific-bubble: #1a1a1a;
+  --dsw-specific-bubble-highlight: #232322;
+  --dsw-alias-markdown-code-block: #0f0f10;
+  --aurora-drift-opacity: 0.18;
+}
+html[data-aurora-style='graphite'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #f4f3f1;
+  --dsw-alias-bg-layer-1: #ffffff;
+  --dsw-alias-bg-layer-2: #fbfaf8;
+  --dsw-alias-bg-layer-3: #ffffff;
+  --dsw-alias-bg-overlay: #ffffff;
+  --dsw-alias-bg-module-platform: #eeece8;
+  --dsw-alias-bg-multi-select: #eeece8;
+  --dsw-specific-sidebar-fill: #eceae6;
+  --dsw-specific-input-major: #ffffff;
+  --dsw-specific-selector: #eeece8;
+  --dsw-specific-tip: #e9e6e1;
+  --dsw-specific-bubble: #f0ede8;
+  --dsw-specific-bubble-highlight: #e5e0d8;
+  --aurora-drift-opacity: 0.24;
+}
+
+html[data-aurora-style='ocean'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #060b14;
+  --dsw-alias-bg-layer-1: #0c1320;
+  --dsw-alias-bg-layer-2: #101a2a;
+  --dsw-alias-bg-layer-3: #142033;
+  --dsw-alias-bg-overlay: #0f1826;
+  --dsw-alias-bg-module-platform: #0d1523;
+  --dsw-alias-bg-multi-select: #121d2e;
+  --dsw-specific-sidebar-fill: #0a111d;
+  --dsw-specific-input-major: #0d1523;
+  --dsw-specific-selector: #121d2e;
+  --dsw-specific-tip: #121d2e;
+  --dsw-specific-bubble: #0f1a2b;
+  --dsw-specific-bubble-highlight: #182740;
+  --dsw-alias-markdown-code-block: #08101b;
+  --aurora-drift-opacity: 0.4;
+}
+html[data-aurora-style='ocean'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #eef4fb;
+  --dsw-alias-bg-layer-1: #ffffff;
+  --dsw-alias-bg-layer-2: #f7fbff;
+  --dsw-alias-bg-layer-3: #ffffff;
+  --dsw-alias-bg-overlay: #ffffff;
+  --dsw-alias-bg-module-platform: #e8f0fa;
+  --dsw-alias-bg-multi-select: #e8f0fa;
+  --dsw-specific-sidebar-fill: #e4edf8;
+  --dsw-specific-input-major: #ffffff;
+  --dsw-specific-selector: #e8f0fa;
+  --dsw-specific-tip: #e2ecf8;
+  --dsw-specific-bubble: #e6f0fb;
+  --dsw-specific-bubble-highlight: #d5e6f8;
+  --aurora-drift-opacity: 0.32;
+}
+
+html[data-aurora-style='sand'] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #0c0a08;
+  --dsw-alias-bg-layer-1: #141110;
+  --dsw-alias-bg-layer-2: #1a1614;
+  --dsw-alias-bg-layer-3: #201b18;
+  --dsw-alias-bg-overlay: #191512;
+  --dsw-alias-bg-module-platform: #161210;
+  --dsw-alias-bg-multi-select: #1c1714;
+  --dsw-specific-sidebar-fill: #100d0b;
+  --dsw-specific-input-major: #161210;
+  --dsw-specific-selector: #1c1714;
+  --dsw-specific-tip: #1c1714;
+  --dsw-specific-bubble: #1a1512;
+  --dsw-specific-bubble-highlight: #26201a;
+  --dsw-alias-markdown-code-block: #100d0a;
+  --aurora-drift-opacity: 0.32;
+}
+html[data-aurora-style='sand'] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #f7f2ec;
+  --dsw-alias-bg-layer-1: #ffffff;
+  --dsw-alias-bg-layer-2: #fdfaf6;
+  --dsw-alias-bg-layer-3: #ffffff;
+  --dsw-alias-bg-overlay: #ffffff;
+  --dsw-alias-bg-module-platform: #f2ebe3;
+  --dsw-alias-bg-multi-select: #f2ebe3;
+  --dsw-specific-sidebar-fill: #f0e8df;
+  --dsw-specific-input-major: #ffffff;
+  --dsw-specific-selector: #f2ebe3;
+  --dsw-specific-tip: #ede4da;
+  --dsw-specific-bubble: #f4ece2;
+  --dsw-specific-bubble-highlight: #eadfd0;
+  --aurora-drift-opacity: 0.28;
+}
+
+/* Motion preference scales the style's own glow instead of replacing it. */
+html[data-aurora-motion='none'] body::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+html[data-aurora-motion='subtle'] body::before {
+  opacity: calc(var(--aurora-drift-opacity, 0.4) * 0.7);
+  animation-duration: 96s !important;
+}
