@@ -30,5 +30,12 @@
     "type": "git",
     "url": "git+https://github.com/ShokouP/dsh-theme-liuguang.git"
   },
+  "homepage": "https://github.com/ShokouP/dsh-theme-liuguang#readme",
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "assets",
+    "README.md"
+  ],
   "license": "MIT"
 }

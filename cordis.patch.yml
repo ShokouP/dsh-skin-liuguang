@@ -1,0 +1,7 @@
+# Installed as a DSH plugin bundle: the loader applies this patch after the
+# profile's own bundles, inserting the skin's host half and its browser face.
+- insert:
+    - id: theme-liuguang
+      name: dsh-theme-liuguang
+    - id: theme-liuguang-browser
+      name: dsh-theme-liuguang-browser

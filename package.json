@@ -1,0 +1,74 @@
+{
+  "name": "dsh-theme-liuguang",
+  "version": "0.3.0",
+  "description": "Liuguang (琉光) — DeepSeek Harness skin with two switchable design languages: liquid glass and Soviet constructivism, plus a personalization panel, drop-in CSS skin packs and a whale-girl desktop pet.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-theme",
+    "dsh-skin",
+    "deepseek-harness",
+    "deepseek",
+    "harness",
+    "skin",
+    "theme",
+    "liquid-glass",
+    "glassmorphism",
+    "constructivism",
+    "soviet-constructivism",
+    "desktop-pet",
+    "liuguang",
+    "琉光",
+    "液态玻璃",
+    "苏联构成主义",
+    "皮肤",
+    "主题",
+    "桌宠"
+  ],
+  "type": "module",
+  "main": "liuguang/lib/index.js",
+  "exports": {
+    ".": "./liuguang/lib/index.js",
+    "./client": "./liuguang/lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./theme.css": "./liuguang/lib/liuguang.css"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.0-rc.2": "compatible"
+      },
+      "note": "Styled through --dsw-* tokens plus semantic hooks; no CSS-module class names are referenced."
+    }
+  },
+  "dependencies": {
+    "dsh-theme-liuguang-browser": "github:ShokouP/dsh-theme-liuguang-browser"
+  },
+  "files": [
+    "liuguang/lib/index.js",
+    "liuguang/lib/client.js",
+    "liuguang/lib/liuguang.css",
+    "liuguang/src",
+    "liuguang/tools",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShokouP/dsh-theme-liuguang.git"
+  },
+  "homepage": "https://github.com/ShokouP/dsh-theme-liuguang#readme",
+  "bugs": {
+    "url": "https://github.com/ShokouP/dsh-theme-liuguang/issues"
+  },
+  "license": "MIT"
+}
