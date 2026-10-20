@@ -1746,3 +1746,105 @@ html[data-lg-language='constructivist'] .lg-pet-body,
 html[data-lg-language='constructivist'] .lg-pet {
   filter: none;
 }
+
+/* ---------------------------------------------------------------------
+   Constructivism v2 — poster furniture.
+   Giant numeral, masthead stripe, annotated composer, paper code blocks,
+   hard focus ring, ruled title bar.
+   --------------------------------------------------------------------- */
+
+/* Giant numeral behind the page, like a constructivist poster index.
+   Lives on the overlay layer: the app's own root paints over body::before. */
+html[data-lg-language='constructivist'] .lg-layer::before {
+  content: '01';
+  display: block;
+  position: fixed;
+  right: 3vw;
+  bottom: 8vh;
+  font-size: min(44vh, 30vw);
+  line-height: 0.78;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: color-mix(in srgb, var(--lg-red) 15%, transparent);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Masthead stripe across the top of the window. */
+html[data-lg-language='constructivist'] body::after {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--lg-red);
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* Red rule under the panel masthead. */
+html[data-lg-language='constructivist'] .lg-panel-title {
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--lg-red);
+}
+
+/* Annotated composer: a small ink stamp in the top-right corner.
+   `inset: auto` is required — the glass language stretched this pseudo element
+   over the whole card, and a partial override would leave a washed highlight. */
+html[data-lg-language='constructivist'] body [data-composer-card]::after {
+  content: 'LIUGUANG · 01';
+  display: block;
+  position: absolute;
+  inset: auto;
+  right: 12px;
+  top: -9px;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  padding: 1px 6px 2px;
+  background: var(--lg-ink);
+  background-image: none;
+  color: var(--lg-paper);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  line-height: 14px;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Paper code blocks and inline code. */
+html[data-lg-language='constructivist'] body {
+  --dsw-alias-markdown-code-block: color-mix(in srgb, var(--dsw-alias-bg-module-platform) 88%, var(--lg-ink));
+  --dsw-alias-markdown-code-block-banner: var(--dsw-alias-bg-module-platform);
+  --dsw-alias-markdown-inline-code: var(--dsw-alias-bg-module-platform);
+  --dsw-alias-markdown-tag: var(--dsw-alias-bg-module-platform);
+  --dsw-alias-markdown-citation: var(--dsw-alias-bg-module-platform);
+  --dsw-specific-bubble: var(--dsw-alias-bg-layer-1);
+  --dsw-specific-bubble-highlight: color-mix(in srgb, var(--lg-ochre) 20%, var(--dsw-alias-bg-layer-1));
+}
+
+/* Hard focus language: no rounded glow, just a red outline. */
+html[data-lg-language='constructivist'] body :focus-visible {
+  outline: 3px solid var(--lg-red);
+  outline-offset: 2px;
+}
+
+/* Sidebar and header controls: square hit areas. */
+html[data-lg-language='constructivist'] body [data-slot='sidebar'] button,
+html[data-lg-language='constructivist'] body [data-window-drag] button,
+html[data-lg-language='constructivist'] body [data-conversation-header-corner] button,
+html[data-lg-language='constructivist'] body [data-conversation-header-leading] button {
+  border-radius: 2px;
+}
+html[data-lg-language='constructivist'] body [data-slot='sidebar'] button:hover,
+html[data-lg-language='constructivist'] body [data-window-drag] button:hover {
+  background-color: color-mix(in srgb, var(--lg-red) 16%, transparent);
+}
+
+/* The title bar sits on a ruled line instead of floating on glass. */
+html[data-lg-language='constructivist'] body [data-window-drag] {
+  border-bottom: 2px solid color-mix(in srgb, var(--lg-ink) 30%, transparent);
+}
