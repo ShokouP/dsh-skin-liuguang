@@ -1522,11 +1522,11 @@ html[data-lg-language='constructivist'] body [role='treeitem'][aria-selected='tr
    solid offset shadow. */
 html[data-lg-language='constructivist'] body [data-composer-card] {
   border-radius: 2px;
+  /* A real left border beats a pseudo-element here: the composer input paints
+     its own background, so an inner stripe would show as a floating red line. */
+  border-left: 8px solid var(--lg-red);
   background-image: none;
   background-color: var(--dsw-specific-input-major);
-  /* The red edge band and the corner stamp are absolutely positioned children:
-     without a positioning context they anchor to the composer seat and stick
-     out above/below the card. */
   position: relative;
   box-shadow:
     inset 0 0 0 2px var(--lg-ink),
@@ -1535,15 +1535,7 @@ html[data-lg-language='constructivist'] body [data-composer-card] {
   -webkit-backdrop-filter: none;
 }
 html[data-lg-language='constructivist'] body [data-composer-card]::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 7px;
-  display: block;
-  background: var(--lg-red);
-  pointer-events: none;
+  display: none;
 }
 html[data-lg-language='constructivist'] body [data-composer-card]::after {
   display: none;
@@ -2166,11 +2158,11 @@ html[data-lg-language='constructivist'][data-lg-weight='light'] .lg-layer::after
 html[data-lg-language='constructivist'][data-lg-weight='strong'] .lg-layer::after {
   opacity: 0.5;
 }
-html[data-lg-language='constructivist'][data-lg-weight='light'] body [data-composer-card]::before {
-  width: 4px;
+html[data-lg-language='constructivist'][data-lg-weight='light'] body [data-composer-card] {
+  border-left-width: 4px;
 }
-html[data-lg-language='constructivist'][data-lg-weight='strong'] body [data-composer-card]::before {
-  width: 13px;
+html[data-lg-language='constructivist'][data-lg-weight='strong'] body [data-composer-card] {
+  border-left-width: 13px;
 }
 html[data-lg-language='constructivist'][data-lg-weight='light'] body [role='treeitem'][aria-selected='true'] {
   background-color: color-mix(in srgb, var(--lg-red) 60%, var(--dsw-alias-bg-base));
