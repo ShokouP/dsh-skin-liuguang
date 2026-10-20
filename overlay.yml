@@ -1,4 +1,4 @@
-# Lab overlay: applies the Aurora skin to a throwaway profile.
+# Lab overlay: applies the Liuguang skin to a throwaway profile.
 - insert:
-    - id: theme-aurora
-      name: dsh-theme-aurora
+    - id: skin-liuguang
+      name: dsh-skin-liuguang

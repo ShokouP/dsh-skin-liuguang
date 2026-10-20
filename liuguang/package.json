@@ -1,8 +1,8 @@
 {
-  "name": "dsh-theme-aurora",
+  "name": "dsh-skin-liuguang",
   "version": "0.2.0",
   "private": true,
-  "description": "Aurora — a flat glass skin with a personalized overlay panel and a DeepSeek-chan pet, packaged as an installable DSH plugin bundle.",
+  "description": "Liuguang — a flat glass skin with a personalized overlay panel and a DeepSeek-chan pet, packaged as an installable DSH plugin bundle.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -10,7 +10,7 @@
     "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json",
-    "./theme.css": "./lib/aurora.css"
+    "./theme.css": "./lib/liuguang.css"
   },
   "dsh": {
     "bundle": {

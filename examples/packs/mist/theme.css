@@ -1,11 +1,11 @@
-/* 樱雾 / Mist — example Aurora skin pack.
+/* 樱雾 / Mist — example Liuguang skin pack.
  *
  * Packs are plain CSS loaded after the skin, so they can re-tint or re-shape
  * anything without running script. Install by copying this directory to
- * `<DSH_HOME>/aurora-packs/mist/`, then pick it in ✦ → 外观 → 皮肤包.
+ * `<DSH_HOME>/liuguang-packs/mist/`, then pick it in ✦ → 外观 → 皮肤包.
  */
 
-html[data-aurora-style] body:not([data-ds-dark-theme]) {
+html[data-lg-style] body:not([data-ds-dark-theme]) {
   --dsw-alias-bg-base: #f6f2f3;
   --dsw-alias-bg-layer-1: #fffdfd;
   --dsw-alias-bg-layer-2: #faf6f7;
@@ -19,12 +19,12 @@ html[data-aurora-style] body:not([data-ds-dark-theme]) {
   --dsw-alias-label-primary: #2a2225;
   --dsw-alias-label-secondary: #5c4e53;
   --dsw-alias-label-tertiary: #857379;
-  --aurora-accent: #b8607f;
-  --aurora-accent-2: #d99aae;
-  --aurora-accent-fill: #9c4763;
+  --lg-accent: #b8607f;
+  --lg-accent-2: #d99aae;
+  --lg-accent-fill: #9c4763;
 }
 
-html[data-aurora-style] body[data-ds-dark-theme] {
+html[data-lg-style] body[data-ds-dark-theme] {
   --dsw-alias-bg-base: #100b0d;
   --dsw-alias-bg-layer-1: #191216;
   --dsw-alias-bg-layer-2: #1f171b;
@@ -38,12 +38,12 @@ html[data-aurora-style] body[data-ds-dark-theme] {
   --dsw-alias-label-primary: #f2e9ec;
   --dsw-alias-label-secondary: #cbb6bd;
   --dsw-alias-label-tertiary: #a8959c;
-  --aurora-accent: #e08aa6;
-  --aurora-accent-2: #f0bccc;
-  --aurora-accent-fill: #8e3f5c;
+  --lg-accent: #e08aa6;
+  --lg-accent-2: #f0bccc;
+  --lg-accent-fill: #8e3f5c;
 }
 
 /* A pack may also shape surfaces — here the composer gets a softer radius. */
-html[data-aurora-style] body [data-composer-card] {
+html[data-lg-style] body [data-composer-card] {
   border-radius: 20px;
 }

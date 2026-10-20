@@ -1,9 +1,9 @@
 <#
-  Revert the Aurora skin for one DSH profile.
+  Revert the Liuguang skin for one DSH profile.
 
   Removes the marked patch block and the installed package; the host watches the
   patch file, so the plugin unloads without a restart. Refresh the page to see
-  the stock UI again. The one-time backup (*.aurora-backup) is left in place.
+  the stock UI again. The one-time backup (*.lg-backup) is left in place.
 #>
 [CmdletBinding()]
 param(
@@ -16,16 +16,16 @@ $ErrorActionPreference = 'Stop'
 $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
 $profileDir = Join-Path $dshHome (Join-Path 'profiles' $ProfileName)
 $patchFile = Join-Path $profileDir 'cordis.patch.yml'
-$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora')
-$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora-browser')
+$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang')
+$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang-browser')
 
 if (Test-Path $patchFile) {
   $patch = [System.IO.File]::ReadAllText($patchFile)
   # Remove ONLY our own insert list. The app may have appended entries inside
   # the marker range (it rewrites the file from its patch list), so a greedy
   # "^# >>> ... ^# <<<" match would delete the user's own entries.
-  $stripped = [regex]::Replace($patch, '(?m)^# >>> aurora-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
-  $stripped = [regex]::Replace($stripped, '(?m)^# <<< aurora-skin[^\r\n]*\r?\n?', '')
+  $stripped = [regex]::Replace($patch, '(?m)^# >>> liuguang-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
+  $stripped = [regex]::Replace($stripped, '(?m)^# <<< liuguang-skin[^\r\n]*\r?\n?', '')
   if ($stripped -ne $patch) {
     $remaining = @($stripped -split "`r?`n" | Where-Object {
         $line = $_.Trim()
@@ -36,7 +36,7 @@ if (Test-Path $patchFile) {
     [System.IO.File]::WriteAllText($patchFile, $text, (New-Object System.Text.UTF8Encoding($false)))
     Write-Host "unpatched -> $patchFile"
   } else {
-    Write-Host "no aurora block in $patchFile"
+    Write-Host "no liuguang block in $patchFile"
   }
 }
 
@@ -54,14 +54,14 @@ $manifestPath = Join-Path $profileDir 'package.json'
 if (Test-Path $manifestPath) {
   $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
   $changed = $false
-  foreach ($name in @('dsh-theme-aurora', 'dsh-theme-aurora-browser')) {
+  foreach ($name in @('dsh-skin-liuguang', 'dsh-skin-liuguang-browser')) {
     if ($manifest.dependencies -and ($manifest.dependencies.PSObject.Properties.Name -contains $name)) {
       $manifest.dependencies.PSObject.Properties.Remove($name)
       $changed = $true
     }
   }
   if ($manifest.dsh -and $manifest.dsh.profile -and $manifest.dsh.profile.bundles) {
-    $kept = @($manifest.dsh.profile.bundles | Where-Object { $_ -ne 'dsh-theme-aurora' })
+    $kept = @($manifest.dsh.profile.bundles | Where-Object { $_ -ne 'dsh-skin-liuguang' })
     if ($kept.Count -ne @($manifest.dsh.profile.bundles).Count) {
       $manifest.dsh.profile.bundles = $kept
       $changed = $true
@@ -76,7 +76,7 @@ if (Test-Path $manifestPath) {
 }
 
 if ($RestoreBackup) {
-  $backup = "$patchFile.aurora-backup"
+  $backup = "$patchFile.lg-backup"
   if (Test-Path $backup) {
     Copy-Item -Force $backup $patchFile
     Write-Host "restored -> $patchFile (from $backup)"
@@ -86,4 +86,4 @@ if ($RestoreBackup) {
 }
 
 Write-Host ''
-Write-Host 'Aurora reverted. Refresh the GUI to confirm the stock skin is back.'
+Write-Host 'Liuguang reverted. Refresh the GUI to confirm the stock skin is back.'

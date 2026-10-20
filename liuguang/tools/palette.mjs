@@ -2,7 +2,7 @@
 //
 // Colors are authored in OKLCH (perceptually even lightness), converted to
 // sRGB hex, then every text/UI pair is checked against WCAG 2.1 contrast.
-// The three "Layer 7" style blocks in lib/aurora.css are rewritten between the
+// The three "Layer 7" style blocks in lib/liuguang.css are rewritten between the
 // generated markers, so the stylesheet stays reproducible.
 //
 //   node tools/palette.mjs           # report + rewrite the CSS blocks
@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
-const cssPath = join(root, 'lib', 'aurora.css')
+const cssPath = join(root, 'lib', 'liuguang.css')
 const START = '/* >>> generated: palettes */'
 const END = '/* <<< generated: palettes */'
 
@@ -224,9 +224,9 @@ function tokenBlock(tokens) {
     `  --dsw-alias-label-primary: ${tokens.text};`,
     `  --dsw-alias-label-secondary: ${tokens.text2};`,
     `  --dsw-alias-label-tertiary: ${tokens.text3};`,
-    `  --aurora-accent: ${tokens.accent};`,
-    `  --aurora-accent-2: ${tokens.accent2};`,
-    `  --aurora-accent-fill: ${tokens.fill};`,
+    `  --lg-accent: ${tokens.accent};`,
+    `  --lg-accent-2: ${tokens.accent2};`,
+    `  --lg-accent-fill: ${tokens.fill};`,
   ].join('\n')
 }
 
@@ -240,8 +240,8 @@ function emitCss() {
       resolved[mode] = entry
     }
     chunks.push(`/* ${style.label} (${id}) */`)
-    chunks.push(`html[data-aurora-style='${id}'] body[data-ds-dark-theme] {\n${tokenBlock(resolved.dark)}\n}`)
-    chunks.push(`html[data-aurora-style='${id}'] body:not([data-ds-dark-theme]) {\n${tokenBlock(resolved.light)}\n}`)
+    chunks.push(`html[data-lg-style='${id}'] body[data-ds-dark-theme] {\n${tokenBlock(resolved.dark)}\n}`)
+    chunks.push(`html[data-lg-style='${id}'] body:not([data-ds-dark-theme]) {\n${tokenBlock(resolved.light)}\n}`)
   }
   chunks.push(END)
   return chunks.join('\n')
@@ -278,7 +278,7 @@ const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const region = new RegExp(`${escapeRe(START)}[\\s\\S]*?${escapeRe(END)}`)
 const generated = emitCss()
 const next = css.replace(region, generated)
-if (!next.includes("data-aurora-style") || next.length === css.length) {
+if (!next.includes("data-lg-style") || next.length === css.length) {
   console.error('palette emission did not take effect; refusing to write a broken sheet')
   process.exit(1)
 }

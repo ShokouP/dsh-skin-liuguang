@@ -1,16 +1,16 @@
 /**
- * Aurora — host half of the main package.
+ * Liuguang — host half of the main package.
  *
  * Serves the skin to browser clients:
  *  - `webserver/index-inject` pastes the stylesheet into served index.html so a
  *    browser tab is styled on first paint;
- *  - `/aurora/theme.css` serves the same stylesheet live, which the browser
+ *  - `/liuguang/theme.css` serves the same stylesheet live, which the browser
  *    half fetches to hot-reload CSS edits;
- *  - `/aurora/packs` + `/aurora/packs/<id>.css` expose drop-in skin packs from
- *    `<DSH_HOME>/aurora-packs/<id>/` (a directory with `pack.json` + `theme.css`).
+ *  - `/liuguang/packs` + `/liuguang/packs/<id>.css` expose drop-in skin packs from
+ *    `<DSH_HOME>/liuguang-packs/<id>/` (a directory with `pack.json` + `theme.css`).
  *
  * The Desktop renderer boots from a static index inside app.asar and never sees
- * index injections; its browser half fetches `/aurora/theme.css` instead.
+ * index injections; its browser half fetches `/liuguang/theme.css` instead.
  *
  * Config knobs (optional): accent, accent2, blur, glass, motion. Values are
  * validated and only ever emitted as literals.
@@ -20,9 +20,9 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const name = 'theme-aurora'
+export const name = 'skin-liuguang'
 
-const STYLESHEET = new URL('./aurora.css', import.meta.url)
+const STYLESHEET = new URL('./liuguang.css', import.meta.url)
 const STYLE_CLOSE = /<\/style/gi
 
 const HEX = /^#[0-9a-fA-F]{6}$/
@@ -41,7 +41,7 @@ function packsRoot() {
   const home = typeof process.env.DSH_HOME === 'string' && process.env.DSH_HOME.trim().length > 0
     ? process.env.DSH_HOME.trim()
     : join(homedir(), '.dsh')
-  return join(home, 'aurora-packs')
+  return join(home, 'liuguang-packs')
 }
 
 /**
@@ -142,18 +142,18 @@ export function readKnobs(config) {
 
 /** Render validated knobs as a custom-property block. */
 export function knobVars(knobs) {
-  const anim = knobs.motion === 'none' ? 'none' : 'aurora-drift'
+  const anim = knobs.motion === 'none' ? 'none' : 'liuguang-drift'
   const drift = knobs.motion === 'subtle' ? '96s' : '54s'
   const glow = knobs.motion === 'none' ? '0' : knobs.motion === 'subtle' ? '0.3' : '0.42'
   return [
     ':root{',
-    `--aurora-accent:${knobs.accent};`,
-    `--aurora-accent-2:${knobs.accent2};`,
-    `--aurora-glass-blur:${knobs.blur}px;`,
-    `--aurora-glass:${knobs.glass};`,
-    `--aurora-anim:${anim};`,
-    `--aurora-drift:${drift};`,
-    `--aurora-drift-opacity:${glow};`,
+    `--lg-accent:${knobs.accent};`,
+    `--lg-accent-2:${knobs.accent2};`,
+    `--lg-glass-blur:${knobs.blur}px;`,
+    `--lg-glass:${knobs.glass};`,
+    `--lg-anim:${anim};`,
+    `--lg-drift:${drift};`,
+    `--lg-drift-opacity:${glow};`,
     '}',
   ].join('')
 }
@@ -195,7 +195,7 @@ export function apply(ctx, config) {
     // Drop-in skin packs: listing + the pack stylesheet itself.
     child.effect(() => child.webServer.register({
       kind: 'exact',
-      path: '/aurora/packs',
+      path: '/liuguang/packs',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD' })
@@ -209,7 +209,7 @@ export function apply(ctx, config) {
 
     child.effect(() => child.webServer.register({
       kind: 'prefix',
-      path: '/aurora/packs',
+      path: '/liuguang/packs',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD' })
@@ -217,7 +217,7 @@ export function apply(ctx, config) {
           return
         }
         const pathname = new URL(req.url ?? '/', 'http://local').pathname
-        const suffix = pathname.startsWith('/aurora/packs/') ? pathname.slice('/aurora/packs/'.length) : ''
+        const suffix = pathname.startsWith('/liuguang/packs/') ? pathname.slice('/liuguang/packs/'.length) : ''
         const match = /^([a-z0-9][a-z0-9-]{0,31})\.css$/.exec(suffix)
         if (match === null) {
           send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
@@ -245,7 +245,7 @@ export function apply(ctx, config) {
 
     child.effect(() => child.webServer.register({
       kind: 'exact',
-      path: '/aurora/theme.css',
+      path: '/liuguang/theme.css',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD' })

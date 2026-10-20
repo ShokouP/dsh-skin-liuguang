@@ -1,123 +1,88 @@
-# Aurora — 液态玻璃皮肤 + 鲸鱼娘桌宠 + 个性化面板（可一键撤销）
+# 琉光 · Liuguang
 
-<div align="center">
+**给 DeepSeek Harness（DSH）的两套设计语言皮肤：液态玻璃 / 苏联构成主义，随时切换。**
 
-**青玉色玻璃面板、缓慢流动的光场与一层极细噪点；右下角一只会换表情的 DeepSeek 鲸鱼娘；外观全部在应用内的「个性化」面板里调。**
+> DSH skin · DSH theme · DeepSeek Harness 皮肤插件 · 可一键撤销 · 可投放皮肤包 · 附带鲸鱼娘桌宠
+>
+> 关键词（方便搜索）：`deepseek harness skin`、`dsh theme`、`dsh-plugin`、`liquid glass`、`glassmorphism`、
+> `soviet constructivism`、`constructivist design`、`桌宠`、`desktop pet`。
 
-![桌宠](screenshots/after-dark.png)
-![个性化面板](screenshots/panel-dark.png)
-![桌宠页](screenshots/pet-tab.png)
+![液态玻璃](screenshots/glass-light.png)
+![苏联构成主义](screenshots/constructivist-dark.png)
 
-</div>
+> 截图里左侧会话栏做了模糊处理，避免泄露个人会话标题。
 
 ---
 
+## 两套设计语言，随时切换
+
+右下角 `✦` → **外观 → 设计语言**，点一下即时切换，不用重启、不用刷新：
+
+| 液态玻璃 / Liquid Glass | 苏联构成主义 / Constructivism |
+|---|---|
+| 半透明磨砂、内部发光玻璃珠、细噪点、跟随指针的镜面高光 | 米色纸面 + 血红 + 墨黑，硬直角、粗边框、实心偏移投影、海报式标题下划线 |
+| 三套底色：**墨银**（暖灰黑+香槟金）/ **深海**（藏蓝+青）/ **暖砂**（褐黑+琥珀） | 明暗两种海报：米色正片 / 墨黑夜版 |
+| 强调色可任意自定义 | 固定红/赭/墨三色，保证构成主义的视觉冲击 |
+
 ## 功能
 
-| | |
-|---|---|
-| **三套底色风格** | **墨银**（暖灰黑 + 香槟金，默认）/ **深海**（藏蓝 + 青）/ **暖砂**（褐黑 + 琥珀）；面板「外观 → 风格」里秒切，强调色还能再单独覆盖 |
-| **投放式皮肤包** | 把 `~/.dsh/aurora-packs/<id>/`（`pack.json` + `theme.css`）丢进去，面板「外观 → 皮肤包」立刻出现，点一下生效，刷新即热更；坏包只影响自己，详见 [docs/skin-packs.md](docs/skin-packs.md) |
-| **液态玻璃** | 侧栏/输入框/对话框/右栏半透明 + `backdrop-filter` 磨砂；背景是缓慢漂移的光场 + 4% 噪点，鼠标移动时输入卡上有一道跟随指针的镜面高光 |
-| **个性化面板** | 右下角 `✦` 打开，三个标签页：**外观**（5 套预设 + 任意自定义颜色、磨砂 0–60px、通透、圆角、动效）、**桌宠**（显示开关、大小、话痨程度、表情试玩、归位）、**关于**（版本/署名/恢复默认） |
-| **鲸鱼娘桌宠** | 7 种表情（招呼/完成/待命/惊讶/鼓气/摸鱼/犯困）；可拖拽、悬停变开心、点击随机反应并说一句话、90 秒无操作自己犯困 |
-| **跟随 DSH** | 深/浅色跟随系统或设置；键盘焦点、`prefers-reduced-motion`、无 `backdrop-filter` 引擎都有降级 |
-| **一键撤销** | 删一个 patch 条目 + 两个 junction，刷新即回原版；不碰 `app.asar` |
+- **设计语言切换**：玻璃 ↔ 构成主义，即时生效并记忆。
+- **投放式皮肤包**：把 `~/.dsh/liuguang-packs/<id>/`（`pack.json` + `theme.css`）丢进去，面板里立刻出现；坏包只影响自己。见 [docs/skin-packs.md](docs/skin-packs.md)。
+- **个性化面板**：外观（设计语言/底色/强调色/磨砂/通透/圆角/动效）、桌宠（显示/大小/话痨/7 种表情试玩/归位）、关于（版本/署名/恢复默认）。
+- **鲸鱼娘桌宠**：7 种表情，可拖拽、悬停变开心、点击随机反应并说一句、90 秒无操作犯困。
+- **可验证的颜色**：配色在 OKLCH 中定义并由脚本转 sRGB，`npm run check:contrast` 按 WCAG 校验全部文字/UI 配对。见 [docs/digest.md](docs/digest.md)。
+- **一键撤销**：删依赖 + 注销 bundle，刷新即回原版；不碰 `app.asar`。
 
-## 一键应用 / 撤销
-
-> 本机 PowerShell 是 `Restricted` 策略，用 `.cmd` 包装器（内部 `-ExecutionPolicy Bypass`）。
+## 安装（Windows 桌面版）
 
 ```bat
-D:\yangchengcup\ui\apply.cmd            :: 装（默认 desktop profile）
-D:\yangchengcup\ui\revert.cmd           :: 撤
-D:\yangchengcup\ui\restart-dsh.cmd      :: 重启 DSH
+:: 1. 首次安装：把皮肤注册进当前 DSH profile（会创建 junction + 写入 bundle 注册）
+D:\yangchengcup\ui\apply.cmd
+
+:: 2. 重启一次 DSH（首次加载插件必须）
+D:\yangchengcup\ui\restart-dsh.cmd
 ```
 
-`apply.ps1` 会：
+撤销：
 
-1. 把两个包声明成 `link:` 依赖并 mount 成 junction 到本仓库
-   （`<DSH_HOME>\profiles\<name>\node_modules\dsh-theme-aurora{,-browser}`）；
-2. 在 `cordis.patch.yml` 末尾追加带标记的 `insert` 块；
-3. 首次修改前把原 patch 备份为 `cordis.patch.yml.aurora-backup`。
+```bat
+D:\yangchengcup\ui\revert.cmd                    :: 移除皮肤
+D:\yangchengcup\ui\revert.cmd -RestoreBackup     :: 连 profile 的 patch 一起还原
+```
 
-**什么时候要重启**：改了 `lib/index.js`（宿主侧）或 `src/overlay.js`（生成 client.js）后需要重启；**只改 `aurora.css` 不用**——浏览器端会从 `/aurora/theme.css` 拉最新样式表，刷新即可。
+多 profile：`apply.cmd -ProfileName web`；临时 profile 用于测试：`apply.cmd -ProfileName lab`。
 
-## 架构
+## 目录
 
 ```
 ui/
-├─ aurora/                       主包：宿主注入 + 浏览器端样式
-│  ├─ lib/index.js               index-inject + /aurora/theme.css
-│  ├─ lib/aurora.css             全部视觉（液态玻璃 / 面板 / 桌宠）
-│  ├─ lib/client.js              生成物：baked CSS + 拉取最新 CSS
-│  ├─ src/overlay.js             个性化面板 + 鲸鱼娘（React，slot: shell.overlay）
-│  └─ tools/build.mjs            把 CSS + overlay 打包成 client.js
-├─ aurora-browser/               浏览器面：唯一挂 overlay / 提供 /aurora/ping 与表情图
-│  ├─ assets/pet/*.png           7 张表情立绘（CC BY-NC-SA，见 assets/pet/CREDITS.md）
-│  └─ lib/index.js               /aurora/ping、/aurora/pet/<name>.png（白名单）
-├─ assets/pet/CREDITS.md         素材署名与许可
-└─ screenshots/                  版本截图
+├─ liuguang/                 主包：宿主注入 + 样式 + 面板/桌宠
+│  ├─ lib/index.js           index-inject、/liuguang/theme.css、/liuguang/packs
+│  ├─ lib/liuguang.css       全部视觉（玻璃 + 构成主义 + 面板 + 桌宠）
+│  ├─ src/overlay.js         React 覆盖层（slot: shell.overlay）
+│  └─ tools/palette.mjs      OKLCH → sRGB + WCAG 审计
+├─ liuguang-browser/         浏览器面：overlay 挂载、/liuguang/ping、表情图
+├─ examples/packs/mist/      示例皮肤包（樱雾）
+├─ docs/                     皮肤包格式、生态消化笔记
+└─ screenshots/              版本截图（侧栏已模糊）
 ```
 
-主包负责 `webserver/index-inject` 与样式表；浏览器面包负责浏览器端条目、桌宠 slot 与表情资源。宿主的客户端插件元数据按 specifier 缓存，所以运行时**新增**一个 specifier 才能被识别。
+## 设计说明
 
-## 自定义
+- 只依赖 `--dsw-*` 设计令牌与语义化钩子（`[data-composer-card]`、`[data-sidebar-right-panel][data-sidebar-right-open]`、`role=treeitem[aria-selected]` 等），**不依赖 CSS-module 哈希类名**，DSH 升级不会静默失效。
+- Windows 标题栏模式下侧栏关闭 `backdrop-filter`（否则 fixed 的标题栏按钮会被重新锚定）。
+- 输入卡不套 `backdrop-filter`、聚焦不做 `transform`，避免把 `/`、`@` 弹层困进层叠上下文。
 
-**界面上**：`✦` → 外观/桌宠/关于，所有选择立刻生效并写入 `localStorage`。
+## English
 
-**配置文件里**（`cordis.patch.yml` 的插件条目）：
+**Liuguang** is a skin for the [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) GUI with **two design languages** —
+*Liquid Glass* (translucent surfaces, inner-lit glass beads, pointer specular) and *Soviet Constructivism*
+(cream/ink/red poster geometry, hard rules, offset shadows) — switchable from the `✦` panel.
+It ships a personalization panel, drop-in CSS skin packs, a whale-girl desktop pet with 7 expressions,
+and an OKLCH + WCAG-audited palette. Install with `apply.cmd`, undo with `revert.cmd`; nothing is patched inside `app.asar`.
 
-```yaml
-- id: theme-aurora
-  name: dsh-theme-aurora
-  config:
-    accent: "#4fb59a"   # 强调色
-    accent2: "#8ee0c8"  # 辅助色
-    blur: 26            # 0–60
-    glass: 1            # 0.2–1
-    motion: full        # full | subtle | none
-    radius: 24          # 12–32
-    petScale: 1         # 0.8–1.4
-    chatty: 2           # 0 | 1 | 2
-    petVisible: true
-```
+## 许可
 
-优先级：**面板（inline）> 配置（`:root`）> 样式表默认**。配置值经过白名单校验（仅 6 位 hex、数值 clamp、枚举），不会作为 CSS 原文拼接。
-
-**改代码**：编辑 `aurora/lib/aurora.css` → 刷新；改 `src/overlay.js` → `node aurora/tools/build.mjs` 再重启。
-
-## 安全与自查
-
-已按两份独立审查修过：
-
-- `</style` 大小写绕过 → `/<\/style/gi`；
-- CSS 读取失败不再让整个 index 404/400：listener 内 try/catch + 上次成功副本兜底；
-- `/aurora/ping`：仅 GET/HEAD、仅 loopback、3s 限速、token 只留 `[a-zA-Z0-9-]`、日志 256KB 轮转；
-- `/aurora/theme.css`：先读后写头、405、`content-length`、`nosniff`、`no-store`；
-- `/aurora/pet/<name>.png`：名字对白名单取模，路径不可穿越；
-- 浏览器端 fetch：仅 `text/css`、≤2MiB、3s 超时；样式一律 `textContent`；
-- 配置 own-property + null 安全，异常值回落默认；
-- 两个包不抢同一 slot / route；
-- 撤销脚本只删自己的 `insert` 块，不会误删应用写进标记区间的条目（已用真实 patch 回归）。
-
-**已知取舍**：
-
-- 侧栏在 Windows 标题栏模式下关闭 `backdrop-filter`（否则 `position:fixed` 的标题栏按钮会被重新锚定并裁掉）；
-- 输入卡不做 `backdrop-filter`、聚焦不做 `transform`（避免把卡内 `/`、`@` 弹层困进层叠上下文）；
-- 折叠的右栏面板不绘制（它有 720px 宽、悬在中栏上，任何背景/模糊都会遮挡对话）；
-- 宠物图为社区二创（CC BY-NC-SA 4.0），**不在 MIT 范围内**。
-
-## 宠物形象来源
-
-表情图来自 [xxnb0/deepseek-chan-fanpack](https://github.com/xxnb0/deepseek-chan-fanpack)，形象溯源 **上善无形** 与 **ZipZipPipe**，**CC BY-NC-SA 4.0**（署名、非商业、相同方式共享）。本仓库做了去底、裁切与 320px 缩放。详见 [`assets/pet/CREDITS.md`](assets/pet/CREDITS.md)。
-
-## 仓库
-
-- <https://github.com/ShokouP/dsh-aurora>（**private**）
-- 代码 MIT；宠物图 CC BY-NC-SA 4.0。
-
-```powershell
-$env:HTTP_PROXY='http://127.0.0.1:7890'; $env:HTTPS_PROXY='http://127.0.0.1:7890'
-cd D:\yangchengcup\ui; git add -A; git commit -m "tune: ..."; git push
-```
+- 代码：**MIT**（见 [LICENSE](LICENSE)）。
+- 宠物立绘：社区二创，**CC BY-NC-SA 4.0**（署名 上善无形 / ZipZipPipe，见 [assets/pet/CREDITS.md](assets/pet/CREDITS.md)），不属于 MIT 范围，禁止商用。
+- 与 DeepSeek 官方无隶属关系。

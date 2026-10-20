@@ -1,12 +1,12 @@
-/* Aurora overlay: personalization panel + the DeepSeek-chan pet.
+/* Liuguang overlay: personalization panel + the DeepSeek-chan pet.
  *
  * Embedded verbatim inside the generated browser half (tools/build.mjs); runs
  * in the GUI renderer and assumes `React` is in scope. No UI framework imports:
  * plain React plus the skin's own CSS classes.
  */
 
-const STORE_KEY = 'aurora.knobs.v2'
-const PET_KEY = 'aurora.pet.v1'
+const STORE_KEY = 'liuguang.knobs.v2'
+const PET_KEY = 'liuguang.pet.v1'
 
 const PRESETS = [
   { id: 'jade', label: '青玉', accent: '#4fb59a', accent2: '#8ee0c8' },
@@ -16,7 +16,7 @@ const PRESETS = [
   { id: 'graphite', label: '石墨', accent: '#8d97a8', accent2: '#c3cbd8' },
 ]
 
-/** Expression pack: sprites served from /aurora/pet/<name>.png. */
+/** Expression pack: sprites served from /liuguang/pet/<name>.png. */
 const EXPRESSIONS = {
   wave: { label: '招呼', lines: ['在的～', '今天也要加油哦', '需要我做什么吗？'] },
   done: { label: '完成', lines: ['搞定！', '交付完成 ✧', '这一段写得很漂亮'] },
@@ -28,6 +28,7 @@ const EXPRESSIONS = {
 }
 
 const DEFAULT_KNOBS = {
+  language: 'glass',
   style: 'graphite',
   pack: '',
   accent: '#c8b48a',
@@ -73,6 +74,7 @@ function normalizeKnobs(input, fallback) {
   const hex = (value, previous) => (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : previous)
   const pick = (value, allowed, previous) => (allowed.indexOf(value) >= 0 ? value : previous)
   return {
+    language: pick(source.language, ['glass', 'constructivist'], base.language),
     style: pick(source.style, ['graphite', 'ocean', 'sand'], base.style),
     pack: typeof source.pack === 'string' && (source.pack === '' || /^[a-z0-9][a-z0-9-]{0,31}$/.test(source.pack))
       ? source.pack
@@ -92,22 +94,23 @@ function normalizeKnobs(input, fallback) {
 /** Push knobs into the document as custom properties. */
 function applyKnobs(knobs) {
   const root = document.documentElement
-  root.setAttribute('data-aurora-style', knobs.style)
-  root.style.setProperty('--aurora-accent', knobs.accent)
-  root.style.setProperty('--aurora-accent-2', knobs.accent2)
-  root.style.setProperty('--aurora-glass-blur', knobs.blur + 'px')
-  root.style.setProperty('--aurora-glass', String(knobs.glass))
-  root.style.setProperty('--aurora-radius', knobs.radius + 'px')
-  root.style.setProperty('--aurora-pet-scale', String(knobs.petScale))
-  root.style.setProperty('--aurora-anim', knobs.motion === 'none' ? 'none' : 'aurora-drift')
-  root.style.setProperty('--aurora-drift', knobs.motion === 'subtle' ? '96s' : '54s')
+  root.setAttribute('data-lg-language', knobs.language)
+  root.setAttribute('data-lg-style', knobs.style)
+  root.style.setProperty('--lg-accent', knobs.accent)
+  root.style.setProperty('--lg-accent-2', knobs.accent2)
+  root.style.setProperty('--lg-glass-blur', knobs.blur + 'px')
+  root.style.setProperty('--lg-glass', String(knobs.glass))
+  root.style.setProperty('--lg-radius', knobs.radius + 'px')
+  root.style.setProperty('--lg-pet-scale', String(knobs.petScale))
+  root.style.setProperty('--lg-anim', knobs.motion === 'none' ? 'none' : 'liuguang-drift')
+  root.style.setProperty('--lg-drift', knobs.motion === 'subtle' ? '96s' : '54s')
   // Drift opacity stays CSS-owned so each base style keeps its own glow level;
-  // `data-aurora-motion` scales it instead of overwriting it.
-  root.setAttribute('data-aurora-motion', knobs.motion)
+  // `data-lg-motion` scales it instead of overwriting it.
+  root.setAttribute('data-lg-motion', knobs.motion)
 }
 
 function PetWhale() {
-  return React.createElement('svg', { viewBox: '0 0 120 120', className: 'aurora-pet-svg', 'aria-hidden': 'true' },
+  return React.createElement('svg', { viewBox: '0 0 120 120', className: 'lg-pet-svg', 'aria-hidden': 'true' },
     React.createElement('ellipse', { cx: '60', cy: '102', rx: '26', ry: '6', fill: 'rgba(10,20,30,0.25)' }),
     React.createElement('circle', { cx: '60', cy: '58', r: '30', fill: '#e9f6ff', stroke: '#9cc7dd', strokeWidth: '2' }),
     React.createElement('circle', { cx: '49', cy: '54', r: '5', fill: '#22303f' }),
@@ -125,8 +128,8 @@ function PetSprite({ expression }) {
   const [failed, setFailed] = React.useState(false)
   if (failed) return React.createElement(PetWhale, null)
   return React.createElement('img', {
-    className: 'aurora-pet-img',
-    src: '/aurora/pet/' + expression + '.png',
+    className: 'lg-pet-img',
+    src: '/liuguang/pet/' + expression + '.png',
     alt: '',
     draggable: false,
     onError: () => setFailed(true),
@@ -134,10 +137,10 @@ function PetSprite({ expression }) {
 }
 
 function ControlRow({ label, value, children }) {
-  return React.createElement('div', { className: 'aurora-row' },
-    React.createElement('span', { className: 'aurora-row-label' }, label),
+  return React.createElement('div', { className: 'lg-row' },
+    React.createElement('span', { className: 'lg-row-label' }, label),
     children,
-    React.createElement('span', { className: 'aurora-row-value' }, value))
+    React.createElement('span', { className: 'lg-row-value' }, value))
 }
 
 /**
@@ -146,7 +149,7 @@ function ControlRow({ label, value, children }) {
  */
 function createOverlay(config) {
   const configDefaults = normalizeKnobs(config, DEFAULT_KNOBS)
-  return function AuroraOverlay() {
+  return function LiuguangOverlay() {
     const [knobs, setKnobs] = React.useState(function () { return normalizeKnobs(readStore(STORE_KEY, {}), configDefaults) })
     const [open, setOpen] = React.useState(false)
     const [tab, setTab] = React.useState('look')
@@ -166,10 +169,10 @@ function createOverlay(config) {
     React.useEffect(function () { writeStore(STORE_KEY, knobs) }, [knobs])
     React.useEffect(function () { writeStore(PET_KEY, pet) }, [pet])
 
-    // Discover drop-in skin packs (`<DSH_HOME>/aurora-packs/<id>/`).
+    // Discover drop-in skin packs (`<DSH_HOME>/lg-packs/<id>/`).
     React.useEffect(function () {
       let alive = true
-      fetch('/aurora/packs', { cache: 'no-store' })
+      fetch('/liuguang/packs', { cache: 'no-store' })
         .then(function (response) { return response.ok ? response.json() : null })
         .then(function (data) {
           if (!alive || data === null || typeof data !== 'object') return
@@ -183,13 +186,13 @@ function createOverlay(config) {
     // A selected pack is a stylesheet appended after the skin, so it can
     // override tokens without being able to run script.
     React.useEffect(function () {
-      const existing = document.getElementById('aurora-pack')
+      const existing = document.getElementById('liuguang-pack')
       if (existing) existing.remove()
       if (!knobs.pack) return
       const link = document.createElement('link')
-      link.id = 'aurora-pack'
+      link.id = 'liuguang-pack'
       link.rel = 'stylesheet'
-      link.href = '/aurora/packs/' + knobs.pack + '.css?v=' + Date.now()
+      link.href = '/liuguang/packs/' + knobs.pack + '.css?v=' + Date.now()
       document.head.appendChild(link)
     }, [knobs.pack])
 
@@ -201,8 +204,8 @@ function createOverlay(config) {
         frame = window.requestAnimationFrame(function () {
           frame = 0
           const root = document.documentElement
-          root.style.setProperty('--aurora-mx', event.clientX + 'px')
-          root.style.setProperty('--aurora-my', event.clientY + 'px')
+          root.style.setProperty('--lg-mx', event.clientX + 'px')
+          root.style.setProperty('--lg-my', event.clientY + 'px')
         })
       }
       window.addEventListener('pointermove', onMove, { passive: true })
@@ -210,9 +213,9 @@ function createOverlay(config) {
         window.removeEventListener('pointermove', onMove)
         if (frame) window.cancelAnimationFrame(frame)
         const root = document.documentElement
-        root.style.removeProperty('--aurora-mx')
-        root.style.removeProperty('--aurora-my')
-        root.removeAttribute('data-aurora-motion')
+        root.style.removeProperty('--lg-mx')
+        root.style.removeProperty('--lg-my')
+        root.removeAttribute('data-lg-motion')
       }
     }, [])
 
@@ -263,43 +266,53 @@ function createOverlay(config) {
     const tabButton = function (id, label) {
       return React.createElement('button', {
         key: id,
-        className: 'aurora-tab' + (tab === id ? ' is-active' : ''),
+        className: 'lg-tab' + (tab === id ? ' is-active' : ''),
         onClick: function () { setTab(id) },
       }, label)
     }
 
-    const lookTab = React.createElement('div', { className: 'aurora-section' },
-      React.createElement('div', { className: 'aurora-segment' },
+    const lookTab = React.createElement('div', { className: 'lg-section' },
+      React.createElement('div', { className: 'lg-inline' },
+        React.createElement('span', null, '设计语言'),
+        React.createElement('div', { className: 'lg-segment liuguang-language' },
+          [['glass', '液态玻璃'], ['constructivist', '构成主义']].map(function (pair) {
+            return React.createElement('button', {
+              key: pair[0],
+              className: 'lg-seg' + (knobs.language === pair[0] ? ' is-active' : ''),
+              onClick: function () { patch({ language: pair[0] }) },
+            }, pair[1])
+          }))),
+      React.createElement('div', { className: 'lg-segment' },
         [['graphite', '墨银'], ['ocean', '深海'], ['sand', '暖砂']].map(function (pair) {
           return React.createElement('button', {
             key: pair[0],
-            className: 'aurora-seg' + (knobs.style === pair[0] ? ' is-active' : ''),
+            className: 'lg-seg' + (knobs.style === pair[0] ? ' is-active' : ''),
             onClick: function () { patch({ style: pair[0] }) },
           }, pair[1])
         })),
-      packs.length > 0 && React.createElement('div', { className: 'aurora-packs' },
-        React.createElement('span', { className: 'aurora-packs-label' }, '皮肤包'),
-        React.createElement('div', { className: 'aurora-packs-list' },
+      packs.length > 0 && React.createElement('div', { className: 'lg-packs' },
+        React.createElement('span', { className: 'lg-packs-label' }, '皮肤包'),
+        React.createElement('div', { className: 'lg-packs-list' },
           [{ id: '', name: '不使用' }].concat(packs).map(function (pack) {
             return React.createElement('button', {
               key: pack.id === '' ? '__none' : pack.id,
-              className: 'aurora-pack-chip' + (knobs.pack === pack.id ? ' is-active' : ''),
+              className: 'lg-pack-chip' + (knobs.pack === pack.id ? ' is-active' : ''),
               title: pack.desc || pack.name,
               onClick: function () { patch({ pack: pack.id }) },
             }, pack.name)
           }))),
-      React.createElement('div', { className: 'aurora-swatches' },
+      React.createElement('div', { className: 'lg-swatches' },
         PRESETS.map(function (preset) {
           return React.createElement('button', {
             key: preset.id,
-            className: 'aurora-swatch' + (knobs.accent === preset.accent ? ' is-active' : ''),
+            className: 'lg-swatch' + (knobs.accent === preset.accent ? ' is-active' : ''),
             title: preset.label,
             'aria-label': preset.label,
             style: { background: 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')' },
             onClick: function () { patch({ accent: preset.accent, accent2: preset.accent2 }) },
           })
         }),
-        React.createElement('label', { className: 'aurora-custom', title: '自定义强调色' },
+        React.createElement('label', { className: 'lg-custom', title: '自定义强调色' },
           React.createElement('input', {
             type: 'color', value: knobs.accent,
             onChange: function (event) { patch({ accent: event.target.value }) },
@@ -307,95 +320,95 @@ function createOverlay(config) {
           React.createElement('span', null, '自定义'))),
       React.createElement(ControlRow, { label: '磨砂', value: knobs.blur + 'px' },
         React.createElement('input', {
-          className: 'aurora-range', type: 'range', min: '0', max: '60', step: '1', value: knobs.blur,
+          className: 'lg-range', type: 'range', min: '0', max: '60', step: '1', value: knobs.blur,
           onChange: function (event) { patch({ blur: event.target.value }) },
         })),
       React.createElement(ControlRow, { label: '通透', value: Math.round(knobs.glass * 100) + '%' },
         React.createElement('input', {
-          className: 'aurora-range', type: 'range', min: '20', max: '100', step: '1', value: Math.round(knobs.glass * 100),
+          className: 'lg-range', type: 'range', min: '20', max: '100', step: '1', value: Math.round(knobs.glass * 100),
           onChange: function (event) { patch({ glass: Number(event.target.value) / 100 }) },
         })),
       React.createElement(ControlRow, { label: '圆角', value: knobs.radius + 'px' },
         React.createElement('input', {
-          className: 'aurora-range', type: 'range', min: '12', max: '32', step: '1', value: knobs.radius,
+          className: 'lg-range', type: 'range', min: '12', max: '32', step: '1', value: knobs.radius,
           onChange: function (event) { patch({ radius: event.target.value }) },
         })),
-      React.createElement('div', { className: 'aurora-segment' },
+      React.createElement('div', { className: 'lg-segment' },
         [['full', '灵动'], ['subtle', '微光'], ['none', '静止']].map(function (pair) {
           return React.createElement('button', {
             key: pair[0],
-            className: 'aurora-seg' + (knobs.motion === pair[0] ? ' is-active' : ''),
+            className: 'lg-seg' + (knobs.motion === pair[0] ? ' is-active' : ''),
             onClick: function () { patch({ motion: pair[0] }) },
           }, pair[1])
         })))
 
-    const petTab = React.createElement('div', { className: 'aurora-section' },
-      React.createElement('div', { className: 'aurora-inline' },
+    const petTab = React.createElement('div', { className: 'lg-section' },
+      React.createElement('div', { className: 'lg-inline' },
         React.createElement('span', null, '显示桌宠'),
         React.createElement('button', {
-          className: 'aurora-toggle' + (knobs.petVisible ? ' is-on' : ''),
+          className: 'lg-toggle' + (knobs.petVisible ? ' is-on' : ''),
           'aria-pressed': knobs.petVisible ? 'true' : 'false',
           onClick: function () { patch({ petVisible: !knobs.petVisible }) },
         }, React.createElement('span', null))),
       React.createElement(ControlRow, { label: '大小', value: Math.round(knobs.petScale * 100) + '%' },
         React.createElement('input', {
-          className: 'aurora-range', type: 'range', min: '80', max: '140', step: '5',
+          className: 'lg-range', type: 'range', min: '80', max: '140', step: '5',
           value: Math.round(knobs.petScale * 100),
           onChange: function (event) { patch({ petScale: Number(event.target.value) / 100 }) },
         })),
-      React.createElement('div', { className: 'aurora-segment' },
+      React.createElement('div', { className: 'lg-segment' },
         [[0, '静默'], [1, '偶尔'], [2, '话痨']].map(function (pair) {
           return React.createElement('button', {
             key: pair[0],
-            className: 'aurora-seg' + (knobs.chatty === pair[0] ? ' is-active' : ''),
+            className: 'lg-seg' + (knobs.chatty === pair[0] ? ' is-active' : ''),
             onClick: function () { patch({ chatty: pair[0] }) },
           }, pair[1])
         })),
-      React.createElement('div', { className: 'aurora-expressions' },
+      React.createElement('div', { className: 'lg-expressions' },
         Object.keys(EXPRESSIONS).map(function (key) {
           return React.createElement('button', {
             key: key,
-            className: 'aurora-expression' + (expression === key ? ' is-active' : ''),
+            className: 'lg-expression' + (expression === key ? ' is-active' : ''),
             title: EXPRESSIONS[key].label,
             onClick: function () { speak(key) },
-          }, React.createElement('img', { src: '/aurora/pet/' + key + '.png', alt: EXPRESSIONS[key].label, draggable: false }))
+          }, React.createElement('img', { src: '/liuguang/pet/' + key + '.png', alt: EXPRESSIONS[key].label, draggable: false }))
         })),
       React.createElement('button', {
-        className: 'aurora-reset',
+        className: 'lg-reset',
         onClick: function () { setPet({ right: 32, bottom: 120 }) },
       }, '桌宠回到右下角'))
 
-    const aboutTab = React.createElement('div', { className: 'aurora-section aurora-about' },
-      React.createElement('p', null, 'Aurora · 液态玻璃皮肤 v0.5'),
+    const aboutTab = React.createElement('div', { className: 'lg-section lg-about' },
+      React.createElement('p', null, 'Liuguang · 液态玻璃皮肤 v0.5'),
       React.createElement('p', null, '形象：上善无形 / ZipZipPipe（CC BY-NC-SA 4.0）'),
-      React.createElement('p', { className: 'aurora-dim' }, '皮肤只作用于表现层，不改动会话数据。'),
-      React.createElement('p', { className: 'aurora-dim' }, '皮肤包目录：~/.dsh/aurora-packs/<id>/'),
-      packProblems > 0 && React.createElement('p', { className: 'aurora-dim' }, '有 ' + packProblems + ' 个皮肤包未能加载（检查 pack.json）'),
+      React.createElement('p', { className: 'lg-dim' }, '皮肤只作用于表现层，不改动会话数据。'),
+      React.createElement('p', { className: 'lg-dim' }, '皮肤包目录：~/.dsh/lg-packs/<id>/'),
+      packProblems > 0 && React.createElement('p', { className: 'lg-dim' }, '有 ' + packProblems + ' 个皮肤包未能加载（检查 pack.json）'),
       React.createElement('button', {
-        className: 'aurora-reset',
+        className: 'lg-reset',
         onClick: function () { setKnobs(configDefaults) },
       }, '恢复默认外观'))
 
-    const panel = open && React.createElement('div', { className: 'aurora-panel', role: 'dialog', 'aria-label': '个性化' },
-      React.createElement('div', { className: 'aurora-panel-title' },
+    const panel = open && React.createElement('div', { className: 'lg-panel', role: 'dialog', 'aria-label': '个性化' },
+      React.createElement('div', { className: 'lg-panel-title' },
         React.createElement('span', null, '个性化'),
-        React.createElement('button', { className: 'aurora-close', onClick: function () { setOpen(false) }, 'aria-label': '关闭' }, '×')),
-      React.createElement('div', { className: 'aurora-tabs' }, tabButton('look', '外观'), tabButton('pet', '桌宠'), tabButton('about', '关于')),
+        React.createElement('button', { className: 'lg-close', onClick: function () { setOpen(false) }, 'aria-label': '关闭' }, '×')),
+      React.createElement('div', { className: 'lg-tabs' }, tabButton('look', '外观'), tabButton('pet', '桌宠'), tabButton('about', '关于')),
       tab === 'look' ? lookTab : tab === 'pet' ? petTab : aboutTab)
 
     const petVisible = knobs.petVisible && !open
     const shownLine = line || (expression === 'sleepy' ? 'zzz…' : '')
 
-    return React.createElement('div', { className: 'aurora-layer' },
+    return React.createElement('div', { className: 'lg-layer' },
       React.createElement('button', {
-        className: 'aurora-launcher' + (open ? ' is-open' : ''),
+        className: 'lg-launcher' + (open ? ' is-open' : ''),
         'aria-label': '个性化',
         title: '个性化',
         onClick: function () { setOpen(function (value) { return !value }) },
       }, '✦'),
       panel,
       petVisible && React.createElement('div', {
-        className: 'aurora-pet' + (expression === 'sleepy' ? ' is-sleepy' : ''),
+        className: 'lg-pet' + (expression === 'sleepy' ? ' is-sleepy' : ''),
         style: { right: pet.right + 'px', bottom: pet.bottom + 'px' },
         onPointerDown: onPointerDown,
         onPointerMove: onPointerMove,
@@ -409,8 +422,8 @@ function createOverlay(config) {
         onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') react() },
         'aria-label': 'DeepSeek 娘',
       },
-        shownLine !== '' && React.createElement('div', { className: 'aurora-bubble' }, shownLine),
-        React.createElement('div', { className: 'aurora-pet-body' }, React.createElement(PetSprite, { expression: expression })),
+        shownLine !== '' && React.createElement('div', { className: 'lg-bubble' }, shownLine),
+        React.createElement('div', { className: 'lg-pet-body' }, React.createElement(PetSprite, { expression: expression })),
       ))
   }
 }
@@ -419,7 +432,7 @@ function createOverlay(config) {
 function mountOverlay(ctx, config) {
   const Overlay = createOverlay(config)
   ctx.slots.inject('shell.overlay', function () {
-    return ctx.slots.register({ name: 'shell.overlay', id: 'aurora', order: 90 }, Overlay)
+    return ctx.slots.register({ name: 'shell.overlay', id: 'liuguang', order: 90 }, Overlay)
   })
 }
 

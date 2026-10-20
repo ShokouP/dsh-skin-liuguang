@@ -1,6 +1,10 @@
 # Plugin runtime diagnostics (written through the linked install)
-aurora/lib/activity.log
-aurora-browser/lib/activity.log
+liuguang/lib/activity.log
+liuguang-browser/lib/activity.log
 *.log
+*.liuguang-backup
 *.aurora-backup
 node_modules/
+
+# Unrelated local checkouts that happen to live in this folder
+tea-party/

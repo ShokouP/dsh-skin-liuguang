@@ -1,6 +1,6 @@
 # 宠物形象来源 / Pet art credits
 
-本目录与 `aurora-browser/assets/pet/` 下的鲸鱼娘立绘均来自社区二创整理仓库
+本目录与 `liuguang-browser/assets/pet/` 下的鲸鱼娘立绘均来自社区二创整理仓库
 [xxnb0/deepseek-chan-fanpack](https://github.com/xxnb0/deepseek-chan-fanpack)
 （`assets/stickers/common/`）：
 
@@ -20,8 +20,8 @@
   - 署名：上善无形、ZipZipPipe，以及 fanpack 整理者 xxnb0；
   - 仅限非商业用途；
   - 二次修改（本仓库做了去底、裁切、缩放到 320px）需以相同许可共享。
-- 这些图片**不属于**本仓库代码的 MIT 许可范围；MIT 仅覆盖 `aurora/` 与
-  `aurora-browser/` 下的代码与 `aurora.css`。
+- 这些图片**不属于**本仓库代码的 MIT 许可范围；MIT 仅覆盖 `liuguang/` 与
+  `liuguang-browser/` 下的代码与 `liuguang.css`。
 - 与 DeepSeek 官方无隶属关系；商用请自行联系原作者取得授权。
 
 处理方式：Pillow 以边框连通域泛洪去底（适配白/浅灰背景）→ 按 alpha 裁切 →

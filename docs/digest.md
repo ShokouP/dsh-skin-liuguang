@@ -17,8 +17,8 @@
 
 加载器会把包内 patch 叠在 profile 的 bundle 层之后。我们照做了：
 
-- `aurora/package.json` 增加 `dsh.bundle.patch` 与 `./cordis.patch.yml` 导出；
-- 新增 `aurora/cordis.patch.yml`，内容是插入 `theme-aurora`、`theme-aurora-browser` 两个条目；
+- `liuguang/package.json` 增加 `dsh.bundle.patch` 与 `./cordis.patch.yml` 导出；
+- 新增 `liuguang/cordis.patch.yml`，内容是插入 `skin-liuguang`、`skin-liuguang-browser` 两个条目；
 - 同时保留 `apply.ps1` 的"直接写 profile patch"路径（桌面端 profile 由 Electron 独占，
   CLI 的 `dsh plugin` 命令不允许改它）。
 
@@ -36,14 +36,14 @@
 
 ### 1.3 OKLCH + WCAG 对比度（来自 dsh-bloom-theme 的方法）
 `webkubor/dsh-bloom-theme` 用 OKLCH 保证明暗感知一致、并对前景/背景做 WCAG AA 校验。
-我们把它做成了可执行流水线：`aurora/tools/palette.mjs`
+我们把它做成了可执行流水线：`liuguang/tools/palette.mjs`
 
 - 三套风格（墨银/深海/暖砂）改为在 OKLCH 里定义，脚本转 sRGB 后写回 CSS 的生成区间；
 - 审计 10 组配对（正文/次要/三级文字 × 各表面、强调色、按钮底、按钮白字），
   当前 6 个组合全部 PASS，最差 3.3（按钮底/一级面，门槛 3.0）；
 - `npm run check:contrast` 直接跑审计，失败退出码 1。
 
-注意：**强调色**用于文字/描边，**按钮底**单独用更深的 `--aurora-accent-fill`——
+注意：**强调色**用于文字/描边，**按钮底**单独用更深的 `--lg-accent-fill`——
 亮色强调色配白图标在暗色下必然不达标，deep-whale 的皮肤也有同样取舍。
 
 ---
@@ -54,7 +54,7 @@
 |---|---|---|
 | `dsh-deep-whale/skin-manager` | 把皮肤管理器注册进 **Settings → Skins**，每套皮肤有自己的选项 | 需要 `@deepseek-ai/dsh-client-ui-settings` 的 settings 段落协议；我们的浮层面板零依赖、可随时卸载，先保持轻 |
 | `dsh-whale-atelier` | 依赖 `_frame`/`_centerCol` 等 CSS-module 后缀做壁纸布局 | 与 DSH 构建哈希强耦合，升级即碎（作者自己也在 note 里承认） |
-| `dsh-snippets` | 内置 CodeMirror 编辑器 + Gist 同步 + 本地文件夹监听 | 功能完备但体积大（CodeMirror 全家桶）；我们只需要"改 CSS 刷新即生效"，已有 `/aurora/theme.css` 热加载 |
+| `dsh-snippets` | 内置 CodeMirror 编辑器 + Gist 同步 + 本地文件夹监听 | 功能完备但体积大（CodeMirror 全家桶）；我们只需要"改 CSS 刷新即生效"，已有 `/liuguang/theme.css` 热加载 |
 | `dsh-market` | 用 `undici` 拉注册表、`update-api-v1` 远程更新协议、独立 `scripts/preflight.mjs` | 那是市场型插件；我们的发布面只是一个 npm 包，不需要自更新 |
 | 多数桌宠 | 注册 `shell.overlay` 槽位 + `/api/*` 路由 | 与我们完全同构，**同时装两个必冲突**（槽位 id/路由重复）；我们的 README 已提醒 |
 
@@ -80,8 +80,8 @@
 来源：`dsh-whale-atelier/docs/SKIN-PACKS.md`（目录 + `skin.json` + 两条安装路径 + 坏包隔离 +
 `/pack` 目录穿越检查）。我们把它简化成**纯 CSS 包**并落地：
 
-- 目录 `<DSH_HOME>/aurora-packs/<id>/`，必需 `pack.json`（`id`/`name`/`desc`）+ `theme.css`；
-- 宿主路由：`GET /aurora/packs`（清单 + problems）与 `GET /aurora/packs/<id>.css`；
+- 目录 `<DSH_HOME>/liuguang-packs/<id>/`，必需 `pack.json`（`id`/`name`/`desc`）+ `theme.css`；
+- 宿主路由：`GET /liuguang/packs`（清单 + problems）与 `GET /liuguang/packs/<id>.css`；
 - `id` 白名单 `^[a-z0-9][a-z0-9-]{0,31}$`，只接受 `<id>.css`，天然阻断 `../`；
 - 512 KiB 上限、`text/css` + `nosniff`、`no-store`（改完刷新即生效）；
 - 坏包只进 `problems`，不连累其它包；
@@ -91,8 +91,8 @@
 与 atelier 的差异：他们一个包能带壁纸/饰件/立绘（多资源类型 + 存在性回落），我们只允许一份
 CSS——体积更小、没有图片路径解析、没有 404 回落逻辑，维持"可审计"的定位。
 
-调试记录：`kind: 'prefix'` 的 `path` **不要带尾部斜杠**（`/aurora/packs/` 匹配不到，
-`/aurora/packs` 才能命中 `/aurora/packs/<id>.css`）。这是本轮唯一一个实测踩到的路由坑。
+调试记录：`kind: 'prefix'` 的 `path` **不要带尾部斜杠**（`/liuguang/packs/` 匹配不到，
+`/liuguang/packs` 才能命中 `/liuguang/packs/<id>.css`）。这是本轮唯一一个实测踩到的路由坑。
 
 ## 5. 结论
 

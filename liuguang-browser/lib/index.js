@@ -1,5 +1,5 @@
 /**
- * Aurora — host half of the browser-face package.
+ * Liuguang — host half of the browser-face package.
  *
  * Why this package exists: the Desktop app boots its renderer from a static
  * index inside app.asar, so `webserver/index-inject` never reaches it. The
@@ -8,7 +8,7 @@
  * host, so a package that first loaded without `dsh.client` never gains one —
  * a *new* specifier does, and the running page picks it up without a restart.
  *
- * It owns the only `/aurora/ping` route (the main package deliberately does
+ * It owns the only `/liuguang/ping` route (the main package deliberately does
  * not register one): the renderer calls it after injecting the skin, which
  * proves the live page loaded it.
  *
@@ -18,7 +18,7 @@
 import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-export const name = 'theme-aurora-browser'
+export const name = 'skin-liuguang-browser'
 
 const ACTIVITY = new URL('./activity.log', import.meta.url)
 const EXPRESSIONS = new Set(['wave', 'done', 'surprised', 'pout', 'task', 'slack', 'sleepy'])
@@ -56,7 +56,7 @@ export function apply(ctx) {
     // The name is checked against a whitelist, so no path can escape the folder.
     child.effect(() => child.webServer.register({
       kind: 'prefix',
-      path: '/aurora/pet',
+      path: '/liuguang/pet',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD' })
@@ -89,7 +89,7 @@ export function apply(ctx) {
 
     child.effect(() => child.webServer.register({
       kind: 'exact',
-      path: '/aurora/ping',
+      path: '/liuguang/ping',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD', 'cache-control': 'no-store' })
@@ -109,7 +109,7 @@ export function apply(ctx) {
         const token = raw.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 64)
         if (token.length === 0) return
         if (ctx.logger !== undefined && typeof ctx.logger.debug === 'function') {
-          ctx.logger.debug(`aurora: client ping ${token}`)
+          ctx.logger.debug(`liuguang: client ping ${token}`)
         }
         note(`client ping ${token}`)
       },
