@@ -1,0 +1,4 @@
+# Lab overlay: applies the Aurora skin to a throwaway profile.
+- insert:
+    - id: theme-aurora
+      name: dsh-theme-aurora
