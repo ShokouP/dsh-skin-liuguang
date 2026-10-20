@@ -73,7 +73,10 @@ if ($patch.Contains($markerStart) -and -not $Force) {
     Write-Host "backup  -> $backup"
   }
   if ($patch.Contains($markerStart)) {
-    $patch = [regex]::Replace($patch, '(?ms)^# >>> aurora-skin.*?^# <<< aurora-skin\r?\n?', '')
+    # Remove only our insert list; the app may have appended entries inside the
+    # marker range while rewriting its patch file.
+    $patch = [regex]::Replace($patch, '(?m)^# >>> aurora-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
+    $patch = [regex]::Replace($patch, '(?m)^# <<< aurora-skin[^\r\n]*\r?\n?', '')
   }
 
   # An untouched profile ships `[]` (or nothing) as its patch list. Appending a

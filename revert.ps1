@@ -21,7 +21,11 @@ $browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora
 
 if (Test-Path $patchFile) {
   $patch = [System.IO.File]::ReadAllText($patchFile)
-  $stripped = [regex]::Replace($patch, '(?ms)^# >>> aurora-skin.*?^# <<< aurora-skin\r?\n?', '')
+  # Remove ONLY our own insert list. The app may have appended entries inside
+  # the marker range (it rewrites the file from its patch list), so a greedy
+  # "^# >>> ... ^# <<<" match would delete the user's own entries.
+  $stripped = [regex]::Replace($patch, '(?m)^# >>> aurora-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
+  $stripped = [regex]::Replace($stripped, '(?m)^# <<< aurora-skin[^\r\n]*\r?\n?', '')
   if ($stripped -ne $patch) {
     $remaining = @($stripped -split "`r?`n" | Where-Object {
         $line = $_.Trim()
