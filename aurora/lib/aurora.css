@@ -1159,3 +1159,192 @@ html[data-aurora-motion='subtle'] body::before {
   opacity: calc(var(--aurora-drift-opacity, 0.4) * 0.7);
   animation-duration: 96s !important;
 }
+
+/* =====================================================================
+   Layer 8: flat glass.
+   No decorative gradients and no outer halos: every surface is a flat
+   translucent pane, and the light lives *inside* it — a specular line at
+   the top plus a soft inner glow, like light caught in a glass bead.
+   ===================================================================== */
+
+/* Flat canvas: the drifting light field and the gradient wash are gone. */
+html body::before {
+  display: none;
+}
+html body {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.18'/></svg>");
+  background-blend-mode: normal;
+}
+
+/* Typography and chips: solid ink instead of gradient text. */
+html body [class*='titleGroup'] > span:not([class*='previewBadge']) {
+  background-image: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: var(--dsw-alias-label-primary);
+  -webkit-text-fill-color: currentColor;
+}
+html body [class*='previewBadge'] {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--aurora-accent) 16%, transparent);
+  color: var(--aurora-accent);
+  border: 0.5px solid color-mix(in srgb, var(--aurora-accent) 45%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Sidebar: one flat pane with an inner top light and a hairline seam. */
+html body [data-slot='sidebar'] > div {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 86%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent),
+    inset -1px 0 0 color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
+}
+html body [data-slot='sidebar'] button:has(kbd) {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 12%, transparent),
+    inset 0 0 28px -14px color-mix(in srgb, var(--aurora-accent) 45%, transparent);
+}
+
+/* Composer: flat pane, inner glow, no rim gradient. */
+html body [data-composer-card] {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--dsw-specific-input-major) 84%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent),
+    inset 0 0 46px -12px color-mix(in srgb, var(--aurora-accent) 28%, transparent),
+    inset 0 -20px 34px -26px rgba(0, 0, 0, 0.55);
+}
+html body [data-composer-card]::before {
+  display: none;
+}
+html body [data-composer-card]:focus-within {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--aurora-accent) 55%, transparent),
+    inset 0 0 58px -10px color-mix(in srgb, var(--aurora-accent) 42%, transparent);
+}
+
+/* Send button: a solid glass bead — no gradient, light trapped inside. */
+html body button:is([aria-label='发送消息'], [aria-label='Send message']) {
+  background-image: none;
+  background-color: var(--aurora-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 18px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 26px -8px color-mix(in srgb, var(--aurora-accent) 85%, transparent);
+}
+html body button:is([aria-label='发送消息'], [aria-label='Send message'])::after {
+  display: none;
+}
+html body button:is([aria-label='发送消息'], [aria-label='Send message']):hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.04);
+  filter: none;
+  background-color: color-mix(in srgb, var(--aurora-accent) 86%, white 14%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 22px -2px rgba(255, 255, 255, 0.55),
+    inset 0 0 30px -8px color-mix(in srgb, var(--aurora-accent) 90%, transparent);
+}
+html body button:is([aria-label='发送消息'], [aria-label='Send message']):disabled {
+  filter: saturate(0.2) opacity(0.7);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent);
+}
+
+/* Panels, dialogs, launcher: same bead treatment. */
+.aurora-panel,
+html body [role='dialog'][aria-modal='true'],
+.aurora-launcher,
+.aurora-expression,
+.aurora-segment,
+.aurora-tabs {
+  background-image: none;
+}
+.aurora-panel {
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent),
+    inset 0 0 40px -14px color-mix(in srgb, var(--aurora-accent) 34%, transparent);
+}
+html body [role='dialog'][aria-modal='true'] {
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 88%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent),
+    inset 0 0 52px -16px color-mix(in srgb, var(--aurora-accent) 30%, transparent);
+}
+.aurora-launcher {
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent),
+    inset 0 0 22px -8px color-mix(in srgb, var(--aurora-accent) 40%, transparent);
+}
+
+/* Session rows keep the flat selected pill (no glow halo). */
+html body [role='treeitem'][aria-selected='true'] {
+  box-shadow: inset 2px 0 0 var(--aurora-accent);
+}
+
+/* The top seam was a gradient; drop it. */
+html body::after {
+  display: none;
+}
+
+/* Menus keep their theme material; only the specular line stays. */
+html body [data-menu-material] {
+  box-shadow:
+    var(--dsw-elevation-stroke, 0 0 0 0.5px var(--dsw-alias-border-l3)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Pet bubble: flat pane with an inner light. */
+.aurora-bubble {
+  background-color: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 90%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent);
+}
+
+/* Dark-mode parity: the original `body[data-ds-dark-theme]` rules outrank the
+   flat pass, so repeat the same overrides with the dark attribute. */
+html body[data-ds-dark-theme] [class*='titleGroup'] > span:not([class*='previewBadge']) {
+  background-image: none;
+  color: var(--dsw-alias-label-primary);
+  -webkit-text-fill-color: currentColor;
+}
+html body[data-ds-dark-theme] [class*='previewBadge'] {
+  background-image: none;
+  color: var(--aurora-accent);
+}
+html body[data-ds-dark-theme] [data-slot='sidebar'] > div {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--dsw-specific-sidebar-fill) 86%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent),
+    inset -1px 0 0 color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
+}
+html body[data-ds-dark-theme] [data-composer-card] {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--dsw-specific-input-major) 84%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent),
+    inset 0 0 46px -12px color-mix(in srgb, var(--aurora-accent) 30%, transparent),
+    inset 0 -20px 34px -26px rgba(0, 0, 0, 0.55);
+}
+html body[data-ds-dark-theme] [data-composer-card]:focus-within {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 0 0.5px color-mix(in srgb, var(--aurora-accent) 55%, transparent),
+    inset 0 0 58px -10px color-mix(in srgb, var(--aurora-accent) 44%, transparent);
+}
+html body[data-ds-dark-theme] button:is([aria-label='发送消息'], [aria-label='Send message']):disabled {
+  filter: saturate(0.2) opacity(0.7);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent);
+}
