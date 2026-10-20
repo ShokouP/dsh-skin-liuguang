@@ -1012,6 +1012,37 @@ html body [data-composer-card] {
 .aurora-expression.is-active {
   box-shadow: inset 0 0 0 1px var(--aurora-accent), 0 4px 14px color-mix(in srgb, var(--aurora-accent) 26%, transparent);
 }
+
+/* Drop-in skin packs (`<DSH_HOME>/aurora-packs/<id>/`). */
+.aurora-packs {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.aurora-packs-label {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+.aurora-packs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.aurora-pack-chip {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-secondary);
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 12%, transparent);
+  font-size: 11px;
+}
+.aurora-pack-chip.is-active {
+  color: var(--dsw-alias-label-primary);
+  background-color: color-mix(in srgb, var(--aurora-accent) 24%, transparent);
+  box-shadow: inset 0 0 0 1px var(--aurora-accent-fill, var(--aurora-accent));
+}
 .aurora-about p {
   margin: 2px 0;
   color: var(--dsw-alias-label-secondary);

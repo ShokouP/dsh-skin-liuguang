@@ -75,7 +75,26 @@
 
 ---
 
-## 4. 结论
+## 4. 第二轮：已落地的"投放式皮肤包"
+
+来源：`dsh-whale-atelier/docs/SKIN-PACKS.md`（目录 + `skin.json` + 两条安装路径 + 坏包隔离 +
+`/pack` 目录穿越检查）。我们把它简化成**纯 CSS 包**并落地：
+
+- 目录 `<DSH_HOME>/aurora-packs/<id>/`，必需 `pack.json`（`id`/`name`/`desc`）+ `theme.css`；
+- 宿主路由：`GET /aurora/packs`（清单 + problems）与 `GET /aurora/packs/<id>.css`；
+- `id` 白名单 `^[a-z0-9][a-z0-9-]{0,31}$`，只接受 `<id>.css`，天然阻断 `../`；
+- 512 KiB 上限、`text/css` + `nosniff`、`no-store`（改完刷新即生效）；
+- 坏包只进 `problems`，不连累其它包；
+- 客户端在「✦ → 外观 → 皮肤包」列出并即时切换，选择写入 localStorage；
+- 附示例包 `examples/packs/mist/`（樱雾）+ 文档 `docs/skin-packs.md`。
+
+与 atelier 的差异：他们一个包能带壁纸/饰件/立绘（多资源类型 + 存在性回落），我们只允许一份
+CSS——体积更小、没有图片路径解析、没有 404 回落逻辑，维持"可审计"的定位。
+
+调试记录：`kind: 'prefix'` 的 `path` **不要带尾部斜杠**（`/aurora/packs/` 匹配不到，
+`/aurora/packs` 才能命中 `/aurora/packs/<id>.css`）。这是本轮唯一一个实测踩到的路由坑。
+
+## 5. 结论
 
 - 我们的架构（host 注入 + 浏览器面 + 无客户端构建依赖）在生态里是主流做法之一，没走错；
 - 最大的差距是**可安装性**（已用 `dsh.bundle.patch` 补齐）和**配色可验证性**（已用 OKLCH+WCAG 补齐）；

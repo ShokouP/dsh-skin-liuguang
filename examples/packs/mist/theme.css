@@ -1,0 +1,49 @@
+/* 樱雾 / Mist — example Aurora skin pack.
+ *
+ * Packs are plain CSS loaded after the skin, so they can re-tint or re-shape
+ * anything without running script. Install by copying this directory to
+ * `<DSH_HOME>/aurora-packs/mist/`, then pick it in ✦ → 外观 → 皮肤包.
+ */
+
+html[data-aurora-style] body:not([data-ds-dark-theme]) {
+  --dsw-alias-bg-base: #f6f2f3;
+  --dsw-alias-bg-layer-1: #fffdfd;
+  --dsw-alias-bg-layer-2: #faf6f7;
+  --dsw-alias-bg-layer-3: #fffdfd;
+  --dsw-alias-bg-module-platform: #f0e9eb;
+  --dsw-specific-sidebar-fill: #efe8ea;
+  --dsw-specific-input-major: #fffdfd;
+  --dsw-specific-selector: #f0e9eb;
+  --dsw-specific-bubble: #f2eaec;
+  --dsw-specific-bubble-highlight: #e8dde0;
+  --dsw-alias-label-primary: #2a2225;
+  --dsw-alias-label-secondary: #5c4e53;
+  --dsw-alias-label-tertiary: #857379;
+  --aurora-accent: #b8607f;
+  --aurora-accent-2: #d99aae;
+  --aurora-accent-fill: #9c4763;
+}
+
+html[data-aurora-style] body[data-ds-dark-theme] {
+  --dsw-alias-bg-base: #100b0d;
+  --dsw-alias-bg-layer-1: #191216;
+  --dsw-alias-bg-layer-2: #1f171b;
+  --dsw-alias-bg-layer-3: #261c21;
+  --dsw-alias-bg-module-platform: #1b1418;
+  --dsw-specific-sidebar-fill: #150e11;
+  --dsw-specific-input-major: #1c1519;
+  --dsw-specific-selector: #241b20;
+  --dsw-specific-bubble: #1d151a;
+  --dsw-specific-bubble-highlight: #2c2027;
+  --dsw-alias-label-primary: #f2e9ec;
+  --dsw-alias-label-secondary: #cbb6bd;
+  --dsw-alias-label-tertiary: #a8959c;
+  --aurora-accent: #e08aa6;
+  --aurora-accent-2: #f0bccc;
+  --aurora-accent-fill: #8e3f5c;
+}
+
+/* A pack may also shape surfaces — here the composer gets a softer radius. */
+html[data-aurora-style] body [data-composer-card] {
+  border-radius: 20px;
+}

@@ -29,6 +29,7 @@ const EXPRESSIONS = {
 
 const DEFAULT_KNOBS = {
   style: 'graphite',
+  pack: '',
   accent: '#c8b48a',
   accent2: '#eadfc8',
   blur: 26,
@@ -73,6 +74,9 @@ function normalizeKnobs(input, fallback) {
   const pick = (value, allowed, previous) => (allowed.indexOf(value) >= 0 ? value : previous)
   return {
     style: pick(source.style, ['graphite', 'ocean', 'sand'], base.style),
+    pack: typeof source.pack === 'string' && (source.pack === '' || /^[a-z0-9][a-z0-9-]{0,31}$/.test(source.pack))
+      ? source.pack
+      : base.pack,
     accent: hex(source.accent, base.accent),
     accent2: hex(source.accent2, base.accent2),
     blur: Math.round(clamp(source.blur, 0, 60, base.blur)),
@@ -155,10 +159,39 @@ function createOverlay(config) {
     const dragRef = React.useRef(null)
     const idleTimer = React.useRef(null)
     const lineTimer = React.useRef(null)
+    const [packs, setPacks] = React.useState([])
+    const [packProblems, setPackProblems] = React.useState(0)
 
     React.useEffect(function () { applyKnobs(knobs) }, [knobs])
     React.useEffect(function () { writeStore(STORE_KEY, knobs) }, [knobs])
     React.useEffect(function () { writeStore(PET_KEY, pet) }, [pet])
+
+    // Discover drop-in skin packs (`<DSH_HOME>/aurora-packs/<id>/`).
+    React.useEffect(function () {
+      let alive = true
+      fetch('/aurora/packs', { cache: 'no-store' })
+        .then(function (response) { return response.ok ? response.json() : null })
+        .then(function (data) {
+          if (!alive || data === null || typeof data !== 'object') return
+          if (Array.isArray(data.packs)) setPacks(data.packs.filter(function (pack) { return pack && typeof pack.id === 'string' }))
+          if (Array.isArray(data.problems)) setPackProblems(data.problems.length)
+        })
+        .catch(function () { /* packs are optional */ })
+      return function () { alive = false }
+    }, [])
+
+    // A selected pack is a stylesheet appended after the skin, so it can
+    // override tokens without being able to run script.
+    React.useEffect(function () {
+      const existing = document.getElementById('aurora-pack')
+      if (existing) existing.remove()
+      if (!knobs.pack) return
+      const link = document.createElement('link')
+      link.id = 'aurora-pack'
+      link.rel = 'stylesheet'
+      link.href = '/aurora/packs/' + knobs.pack + '.css?v=' + Date.now()
+      document.head.appendChild(link)
+    }, [knobs.pack])
 
     // Specular highlight follows the pointer across the glass.
     React.useEffect(function () {
@@ -244,6 +277,17 @@ function createOverlay(config) {
             onClick: function () { patch({ style: pair[0] }) },
           }, pair[1])
         })),
+      packs.length > 0 && React.createElement('div', { className: 'aurora-packs' },
+        React.createElement('span', { className: 'aurora-packs-label' }, '皮肤包'),
+        React.createElement('div', { className: 'aurora-packs-list' },
+          [{ id: '', name: '不使用' }].concat(packs).map(function (pack) {
+            return React.createElement('button', {
+              key: pack.id === '' ? '__none' : pack.id,
+              className: 'aurora-pack-chip' + (knobs.pack === pack.id ? ' is-active' : ''),
+              title: pack.desc || pack.name,
+              onClick: function () { patch({ pack: pack.id }) },
+            }, pack.name)
+          }))),
       React.createElement('div', { className: 'aurora-swatches' },
         PRESETS.map(function (preset) {
           return React.createElement('button', {
@@ -322,9 +366,11 @@ function createOverlay(config) {
       }, '桌宠回到右下角'))
 
     const aboutTab = React.createElement('div', { className: 'aurora-section aurora-about' },
-      React.createElement('p', null, 'Aurora · 液态玻璃皮肤 v0.4'),
+      React.createElement('p', null, 'Aurora · 液态玻璃皮肤 v0.5'),
       React.createElement('p', null, '形象：上善无形 / ZipZipPipe（CC BY-NC-SA 4.0）'),
       React.createElement('p', { className: 'aurora-dim' }, '皮肤只作用于表现层，不改动会话数据。'),
+      React.createElement('p', { className: 'aurora-dim' }, '皮肤包目录：~/.dsh/aurora-packs/<id>/'),
+      packProblems > 0 && React.createElement('p', { className: 'aurora-dim' }, '有 ' + packProblems + ' 个皮肤包未能加载（检查 pack.json）'),
       React.createElement('button', {
         className: 'aurora-reset',
         onClick: function () { setKnobs(configDefaults) },

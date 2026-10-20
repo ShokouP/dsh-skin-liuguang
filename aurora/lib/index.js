@@ -5,7 +5,9 @@
  *  - `webserver/index-inject` pastes the stylesheet into served index.html so a
  *    browser tab is styled on first paint;
  *  - `/aurora/theme.css` serves the same stylesheet live, which the browser
- *    half fetches to hot-reload CSS edits.
+ *    half fetches to hot-reload CSS edits;
+ *  - `/aurora/packs` + `/aurora/packs/<id>.css` expose drop-in skin packs from
+ *    `<DSH_HOME>/aurora-packs/<id>/` (a directory with `pack.json` + `theme.css`).
  *
  * The Desktop renderer boots from a static index inside app.asar and never sees
  * index injections; its browser half fetches `/aurora/theme.css` instead.
@@ -13,7 +15,9 @@
  * Config knobs (optional): accent, accent2, blur, glass, motion. Values are
  * validated and only ever emitted as literals.
  */
-import { readFileSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const name = 'theme-aurora'
@@ -25,7 +29,94 @@ const HEX = /^#[0-9a-fA-F]{6}$/
 const MOTIONS = new Set(['full', 'subtle', 'none'])
 const DEFAULTS = Object.freeze({ accent: '#4fb59a', accent2: '#8ee0c8', blur: 26, glass: 1, motion: 'full' })
 
+/** Skin packs live next to the profile, never inside the plugin directory. */
+const PACK_ID = /^[a-z0-9][a-z0-9-]{0,31}$/
+const PACK_SCAN_MS = 5000
+const MAX_PACK_BYTES = 512 * 1024
+
 let cache = { key: '', css: '' }
+let packCache = { at: 0, packs: [], problems: [] }
+
+function packsRoot() {
+  const home = typeof process.env.DSH_HOME === 'string' && process.env.DSH_HOME.trim().length > 0
+    ? process.env.DSH_HOME.trim()
+    : join(homedir(), '.dsh')
+  return join(home, 'aurora-packs')
+}
+
+/**
+ * Scan the drop-in directory. A broken pack is reported but never breaks the
+ * others: missing/corrupt manifest or an invalid id only adds to `problems`.
+ */
+export function scanPacks() {
+  const now = Date.now()
+  if (now - packCache.at < PACK_SCAN_MS) return packCache
+
+  const root = packsRoot()
+  const packs = []
+  const problems = []
+  let entries = []
+  try {
+    entries = readdirSync(root, { withFileTypes: true })
+  } catch {
+    packCache = { at: now, packs, problems }
+    return packCache
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const id = entry.name
+    if (!PACK_ID.test(id)) {
+      problems.push(`${id}: invalid id (use [a-z0-9-], max 32)`)
+      continue
+    }
+    const dir = join(root, id)
+    let manifest
+    try {
+      manifest = JSON.parse(readFileSync(join(dir, 'pack.json'), 'utf8'))
+    } catch {
+      problems.push(`${id}: pack.json missing or not valid JSON`)
+      continue
+    }
+    const name = typeof manifest?.name === 'string' ? manifest.name.trim() : ''
+    if (manifest?.id !== id) {
+      problems.push(`${id}: pack.json id must match its directory name`)
+      continue
+    }
+    if (name.length === 0 || name.length > 40) {
+      problems.push(`${id}: name required (≤40 chars)`)
+      continue
+    }
+    try {
+      if (statSync(join(dir, 'theme.css')).size > MAX_PACK_BYTES) {
+        problems.push(`${id}: theme.css larger than ${MAX_PACK_BYTES} bytes`)
+        continue
+      }
+    } catch {
+      problems.push(`${id}: theme.css missing`)
+      continue
+    }
+    packs.push({
+      id,
+      name,
+      desc: typeof manifest?.desc === 'string' ? manifest.desc.trim().slice(0, 120) : '',
+    })
+  }
+
+  packs.sort((a, b) => a.name.localeCompare(b.name))
+  packCache = { at: now, packs, problems }
+  return packCache
+}
+
+function send(res, status, type, body, cacheControl) {
+  res.writeHead(status, {
+    'content-type': type,
+    'content-length': Buffer.byteLength(body),
+    'cache-control': cacheControl,
+    'x-content-type-options': 'nosniff',
+  })
+  res.end(body)
+}
 
 /** Own-property read that survives null/odd config objects. */
 function own(object, key) {
@@ -101,6 +192,57 @@ export function apply(ctx, config) {
   })
 
   ctx.inject(['webServer'], (child) => {
+    // Drop-in skin packs: listing + the pack stylesheet itself.
+    child.effect(() => child.webServer.register({
+      kind: 'exact',
+      path: '/aurora/packs',
+      handler: (req, res) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD' })
+          res.end()
+          return
+        }
+        const { packs, problems } = scanPacks()
+        send(res, 200, 'application/json; charset=utf-8', JSON.stringify({ packs, problems }), 'no-store')
+      },
+    }))
+
+    child.effect(() => child.webServer.register({
+      kind: 'prefix',
+      path: '/aurora/packs',
+      handler: (req, res) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD' })
+          res.end()
+          return
+        }
+        const pathname = new URL(req.url ?? '/', 'http://local').pathname
+        const suffix = pathname.startsWith('/aurora/packs/') ? pathname.slice('/aurora/packs/'.length) : ''
+        const match = /^([a-z0-9][a-z0-9-]{0,31})\.css$/.exec(suffix)
+        if (match === null) {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
+          return
+        }
+        const known = scanPacks().packs.some((pack) => pack.id === match[1])
+        if (!known) {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
+          return
+        }
+        let bytes
+        try {
+          bytes = readFileSync(join(packsRoot(), match[1], 'theme.css'))
+        } catch {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
+          return
+        }
+        if (bytes.byteLength > MAX_PACK_BYTES) {
+          send(res, 413, 'text/plain; charset=utf-8', 'pack too large', 'no-store')
+          return
+        }
+        send(res, 200, 'text/css; charset=utf-8', bytes, 'no-store')
+      },
+    }))
+
     child.effect(() => child.webServer.register({
       kind: 'exact',
       path: '/aurora/theme.css',
