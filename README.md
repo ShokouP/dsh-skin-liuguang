@@ -54,10 +54,29 @@
 - **可验证的颜色**：配色在 OKLCH 中定义并由脚本转 sRGB，`npm run check:contrast` 按 WCAG 校验全部文字/UI 配对。见 [docs/digest.md](docs/digest.md)。
 - **一键撤销**：删依赖 + 注销 bundle，刷新即回原版；不碰 `app.asar`。
 
-## 安装（Windows 桌面版）
+## 安装
+
+### 方式一：从 GitHub 直接装（推荐，已实测）
+
+> 需要本机有 `pnpm`（`npm i -g pnpm`）。DSH 会把 git 插件交给 pnpm 安装。
 
 ```bat
-:: 1. 首次安装：把皮肤注册进当前 DSH profile（会创建 junction + 写入 bundle 注册）
+cd /d %USERPROFILE%
+dsh plugin add github:ShokouP/dsh-theme-liuguang
+```
+
+安装后**重启一次 DSH**，右下角出现 `✦` 即为成功。
+
+卸载：
+
+```bat
+dsh plugin remove dsh-theme-liuguang
+```
+
+### 方式二：本仓库脚本（开发/本机）
+
+```bat
+:: 1. 首次安装：把皮肤注册进当前 DSH profile（创建 junction + 写入 bundle 注册）
 D:\yangchengcup\ui\apply.cmd
 
 :: 2. 重启一次 DSH（首次加载插件必须）
@@ -72,6 +91,14 @@ D:\yangchengcup\ui\revert.cmd -RestoreBackup     :: 连 profile 的 patch 一起
 ```
 
 多 profile：`apply.cmd -ProfileName web`；临时 profile 用于测试：`apply.cmd -ProfileName lab`。
+
+### 方式三：npm（等待发布）
+
+```bat
+dsh plugin add dsh-theme-liuguang
+```
+
+> npm 账号开了 2FA，发布需要 OTP；包 `dsh-theme-liuguang` 发布后这条命令即可用，届时也会进入插件市场索引。
 
 ## 目录
 
