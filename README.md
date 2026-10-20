@@ -2,10 +2,13 @@
 
 **给 DeepSeek Harness（DSH）的两套设计语言皮肤：液态玻璃 / 苏联构成主义，随时切换。**
 
-> DSH skin · DSH theme · DeepSeek Harness 皮肤插件 · 可一键撤销 · 可投放皮肤包 · 附带鲸鱼娘桌宠
+> **包名（装的就是它）**：`dsh-theme-liuguang` ＋ `dsh-theme-liuguang-browser`
 >
-> 关键词（方便搜索）：`deepseek harness skin`、`dsh theme`、`dsh-plugin`、`liquid glass`、`glassmorphism`、
-> `soviet constructivism`、`constructivist design`、`桌宠`、`desktop pet`。
+> **别名 / 搜这些词都能找到我**：
+> DSH 皮肤 · DSH 主题 · DeepSeek Harness 皮肤 · DeepSeek Harness 主题插件 ·
+> dsh skin · dsh theme · dsh-plugin · liquid glass skin · glassmorphism ·
+> Soviet constructivism theme · constructivist UI · 液态玻璃皮肤 · 苏联构成主义主题 ·
+> 鲸鱼娘桌宠 · desktop pet skin · 琉光主题
 
 ![液态玻璃](screenshots/glass-light.png)
 ![苏联构成主义](screenshots/constructivist-dark.png)

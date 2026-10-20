@@ -18,7 +18,7 @@
 import { appendFileSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-export const name = 'skin-liuguang-browser'
+export const name = 'theme-liuguang-browser'
 
 const ACTIVITY = new URL('./activity.log', import.meta.url)
 const EXPRESSIONS = new Set(['wave', 'done', 'surprised', 'pout', 'task', 'slack', 'sleepy'])

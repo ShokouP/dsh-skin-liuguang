@@ -138,9 +138,9 @@ ${overlay}
   console.log(`built ${file} (id ${id}, sha ${hash})`)
 }
 
-bundle({ id: 'dsh-skin-liuguang', file: join(root, 'lib', 'client.js'), overlay: false })
+bundle({ id: 'dsh-theme-liuguang', file: join(root, 'lib', 'client.js'), overlay: false })
 bundle({
-  id: 'dsh-skin-liuguang-browser',
+  id: 'dsh-theme-liuguang-browser',
   file: join(root, '..', 'liuguang-browser', 'lib', 'client.js'),
   overlay: true,
 })

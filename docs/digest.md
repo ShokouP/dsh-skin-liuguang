@@ -18,7 +18,7 @@
 加载器会把包内 patch 叠在 profile 的 bundle 层之后。我们照做了：
 
 - `liuguang/package.json` 增加 `dsh.bundle.patch` 与 `./cordis.patch.yml` 导出；
-- 新增 `liuguang/cordis.patch.yml`，内容是插入 `skin-liuguang`、`skin-liuguang-browser` 两个条目；
+- 新增 `liuguang/cordis.patch.yml`，内容是插入 `theme-liuguang`、`theme-liuguang-browser` 两个条目；
 - 同时保留 `apply.ps1` 的"直接写 profile patch"路径（桌面端 profile 由 Electron 独占，
   CLI 的 `dsh plugin` 命令不允许改它）。
 

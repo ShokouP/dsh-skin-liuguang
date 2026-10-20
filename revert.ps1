@@ -16,8 +16,8 @@ $ErrorActionPreference = 'Stop'
 $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFILE '.dsh' }
 $profileDir = Join-Path $dshHome (Join-Path 'profiles' $ProfileName)
 $patchFile = Join-Path $profileDir 'cordis.patch.yml'
-$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang')
-$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang-browser')
+$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang')
+$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang-browser')
 
 if (Test-Path $patchFile) {
   $patch = [System.IO.File]::ReadAllText($patchFile)
@@ -54,14 +54,14 @@ $manifestPath = Join-Path $profileDir 'package.json'
 if (Test-Path $manifestPath) {
   $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
   $changed = $false
-  foreach ($name in @('dsh-skin-liuguang', 'dsh-skin-liuguang-browser')) {
+  foreach ($name in @('dsh-theme-liuguang', 'dsh-theme-liuguang-browser')) {
     if ($manifest.dependencies -and ($manifest.dependencies.PSObject.Properties.Name -contains $name)) {
       $manifest.dependencies.PSObject.Properties.Remove($name)
       $changed = $true
     }
   }
   if ($manifest.dsh -and $manifest.dsh.profile -and $manifest.dsh.profile.bundles) {
-    $kept = @($manifest.dsh.profile.bundles | Where-Object { $_ -ne 'dsh-skin-liuguang' })
+    $kept = @($manifest.dsh.profile.bundles | Where-Object { $_ -ne 'dsh-theme-liuguang' })
     if ($kept.Count -ne @($manifest.dsh.profile.bundles).Count) {
       $manifest.dsh.profile.bundles = $kept
       $changed = $true

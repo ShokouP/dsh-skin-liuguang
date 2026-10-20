@@ -1,4 +1,4 @@
 # Lab overlay: applies the Liuguang skin to a throwaway profile.
 - insert:
-    - id: skin-liuguang
-      name: dsh-skin-liuguang
+    - id: theme-liuguang
+      name: dsh-theme-liuguang

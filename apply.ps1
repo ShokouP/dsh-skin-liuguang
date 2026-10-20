@@ -2,7 +2,7 @@
   Apply the Liuguang skin to one DSH profile.
 
   What it changes (all reversible with revert.ps1):
-    1. copies ui/liuguang/ into  <DSH_HOME>/profiles/<name>/node_modules/dsh-skin-liuguang
+    1. copies ui/liuguang/ into  <DSH_HOME>/profiles/<name>/node_modules/dsh-theme-liuguang
     2. appends one marked insert block to  <DSH_HOME>/profiles/<name>/cordis.patch.yml
     3. keeps a one-time backup of cordis.patch.yml next to it (*.lg-backup)
 
@@ -74,12 +74,12 @@ if ($patch.Contains($markerStart)) {
   Write-Host "legacy patch block removed -> $patchFile"
 }
 
-$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang')
+$dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang')
 $browserSource = Join-Path (Split-Path $source -Parent) 'liuguang-browser'
-$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-skin-liuguang-browser')
+$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang-browser')
 $packages = @(
-  @{ Name = 'dsh-skin-liuguang'; Path = $source; Dest = $dest }
-  @{ Name = 'dsh-skin-liuguang-browser'; Path = $browserSource; Dest = $browserDest }
+  @{ Name = 'dsh-theme-liuguang'; Path = $source; Dest = $dest }
+  @{ Name = 'dsh-theme-liuguang-browser'; Path = $browserSource; Dest = $browserDest }
 ) | Where-Object { Test-Path (Join-Path $_.Path 'package.json') }
 
 # The Desktop profile's node_modules is owned by pnpm (the app's plugin manager
@@ -95,17 +95,26 @@ foreach ($package in $packages) {
   $manifest.dependencies | Add-Member -NotePropertyName $package.Name -NotePropertyValue ("link:" + ($package.Path -replace '\\', '/')) -Force
 }
 # Register the bundle so the loader applies liuguang/cordis.patch.yml itself
-# (idempotent: only appended when missing). Entries left behind by the old
-# Aurora naming are removed here, otherwise the loader would fail to resolve a
-# package that no longer exists.
-$legacy = @('dsh-theme-aurora', 'dsh-theme-aurora-browser')
+# (idempotent: only appended when missing). Entries left behind by earlier
+# package names are removed here, otherwise the loader would try to resolve a
+# package (or a bundle id) that no longer exists.
+$legacy = @(
+  'dsh-theme-aurora', 'dsh-theme-aurora-browser',
+  'dsh-skin-liuguang', 'dsh-skin-liuguang-browser'
+)
 foreach ($name in $legacy) {
   if ($manifest.dependencies -and ($manifest.dependencies.PSObject.Properties.Name -contains $name)) {
     $manifest.dependencies.PSObject.Properties.Remove($name)
     Write-Host "legacy  -> removed dependency $name"
   }
+  $stale = Join-Path $profileDir (Join-Path 'node_modules' $name)
+  if (Test-Path $stale) {
+    $item = Get-Item $stale -Force
+    if ($item.LinkType) { $item.Delete() } else { Remove-Item -Recurse -Force $stale }
+    Write-Host "legacy  -> removed link $name"
+  }
 }
-$bundleName = 'dsh-skin-liuguang'
+$bundleName = 'dsh-theme-liuguang'
 $bundles = @($manifest.dsh.profile.bundles | Where-Object { $legacy -notcontains $_ })
 if ($bundles -notcontains $bundleName) {
   $bundles += $bundleName

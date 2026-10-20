@@ -20,7 +20,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const name = 'skin-liuguang'
+export const name = 'theme-liuguang'
 
 const STYLESHEET = new URL('./liuguang.css', import.meta.url)
 const STYLE_CLOSE = /<\/style/gi
