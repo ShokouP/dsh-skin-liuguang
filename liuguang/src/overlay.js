@@ -393,16 +393,18 @@ function createOverlay(config) {
             const rect = card.getBoundingClientRect()
             set('--lg-mark-speed-left', rect.left + 10)
             set('--lg-mark-speed-top', rect.top - 22)
-            // Tokens/cache sit under the header on the right edge of the chat
-            // column — far from the composer corner, which already carries the
-            // clock stamp and the model chip.
+            // The step count sits in the gutter just left of the composer, with
+            // its tick facing the input box.
+            set('--lg-mark-steps-right', window.innerWidth - rect.left + 14)
+            set('--lg-mark-steps-top', rect.top + 16)
+            // Tokens/context/cache sit under the header on the right edge of the
+            // chat column — far from the composer corner, which already carries
+            // the model chip.
             set('--lg-mark-tok-right', 44)
             set('--lg-mark-tok-top', 96)
-            // Context gauge: a rule in the gutter left of the composer, running
-            // from below the header down to the composer edge.
-            set('--lg-mark-ctx-left', rect.left - 14)
-            set('--lg-mark-ctx-top', 94)
-            set('--lg-mark-ctx-height', Math.max(60, rect.top - 94 - 18))
+            // Column guides span the message column only, never the whole page.
+            set('--lg-guides-top', rect.top - 26)
+            set('--lg-guides-height', Math.max(80, rect.top - 26 - 96))
           }
         } catch {
           /* keep the stylesheet defaults */
@@ -410,9 +412,7 @@ function createOverlay(config) {
       }
       const read = function () {
         place()
-        const next = readMetrics()
-        setMetrics(next)
-        root.style.setProperty('--lg-ctx-pct', String(Number(next.ctx) || 0))
+        setMetrics(readMetrics())
       }
       read()
       const timer = window.setInterval(read, 2500)
@@ -420,7 +420,7 @@ function createOverlay(config) {
       return function () {
         window.clearInterval(timer)
         window.removeEventListener('resize', place)
-        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-ctx-left', '--lg-mark-ctx-top', '--lg-mark-ctx-height', '--lg-mark-tok-right', '--lg-mark-tok-top', '--lg-ctx-pct']) {
+        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-steps-right', '--lg-mark-steps-top', '--lg-mark-tok-right', '--lg-mark-tok-top', '--lg-guides-top', '--lg-guides-height']) {
           root.style.removeProperty(name)
         }
       }
@@ -690,12 +690,9 @@ function createOverlay(config) {
           markNumber(metrics.steps, '步', '轮次 ' + (metrics.turns || '—'))),
         React.createElement('div', { className: 'lg-mark lg-mark-speed' },
           markNumber(metrics.tps, 'tok/s')),
-        // The gauge only exists when the context figure is known, so no orphan
-        // rule is ever left hanging in the margin.
-        metrics.ctx ? React.createElement('div', { className: 'lg-mark lg-mark-ctx' },
-          React.createElement('span', { className: 'lg-mark-ctx-label' }, 'CTX ' + metrics.ctx + '%')) : null,
         React.createElement('div', { className: 'lg-mark lg-mark-tok' },
-          markNumber(metrics.total, 'tok', '缓存 ' + (metrics.cache || '—') + '%')))
+          markNumber(metrics.total, 'tok',
+            (metrics.ctx ? 'CTX ' + metrics.ctx + '% · ' : '') + '缓存 ' + (metrics.cache || '—') + '%')))
 
     return React.createElement('div', { className: 'lg-layer' },
       // Column guides for the constructivist language (CSS decides visibility).

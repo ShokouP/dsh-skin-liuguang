@@ -2117,8 +2117,9 @@ html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::before
 html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::after {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
+  /* Rulers span the message column only, measured by the browser half. */
+  top: var(--lg-guides-top, 96px);
+  height: var(--lg-guides-height, 60vh);
   width: 1px;
 }
 html[data-lg-language='constructivist'][data-lg-rules='80'] .lg-guides::before,
@@ -2249,12 +2250,14 @@ html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
   letter-spacing: 0.08em;
 }
 
-/* Sidebar foot: this session's step count, with the turn count as a caption. */
+/* Left of the composer: this session's step count, turn count as a caption.
+   The red tick sits on the composer-facing side, like a margin note. */
 .lg-mark-steps {
-  left: 24px;
-  bottom: 88px;
-  padding-left: 8px;
-  border-left: 3px solid var(--lg-red);
+  right: var(--lg-mark-steps-right, 240px);
+  top: var(--lg-mark-steps-top, 70vh);
+  text-align: right;
+  padding-right: 8px;
+  border-right: 3px solid var(--lg-red);
 }
 .lg-mark-steps .lg-mark-num {
   font-size: 22px;
@@ -2273,34 +2276,7 @@ html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
   letter-spacing: 0.1em;
 }
 
-/* Chat column rail: context usage as a gauge filled from the bottom. */
-.lg-mark-ctx {
-  left: var(--lg-mark-ctx-left, 0);
-  top: var(--lg-mark-ctx-top, 0);
-  width: 3px;
-  height: var(--lg-mark-ctx-height, 60vh);
-  background: color-mix(in srgb, var(--lg-ink) 14%, transparent);
-}
-.lg-mark-ctx::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(var(--lg-ctx-pct, 0) * 1%);
-  background: var(--lg-red);
-}
-.lg-mark-ctx-label {
-  position: absolute;
-  top: -2px;
-  left: 9px;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  white-space: nowrap;
-}
-
-/* Header corner: session tokens and cache hit rate. */
+/* Header corner: session tokens, context and cache hit rate. */
 .lg-mark-tok {
   right: var(--lg-mark-tok-right, 44px);
   top: var(--lg-mark-tok-top, 96px);
