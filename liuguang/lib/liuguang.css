@@ -1426,6 +1426,18 @@ html[data-lg-language='constructivist'] {
   --lg-paper: #efe6d2;
 }
 
+/* The whole radius scale collapses: chips, menus, dialogs and cards square up
+   wherever the app reads its own radius tokens, not just in our own widgets. */
+html[data-lg-language='constructivist'] body {
+  --dsw-radius-xs: 1px;
+  --dsw-radius-sm: 2px;
+  --dsw-radius-md: 2px;
+  --dsw-radius-lg: 2px;
+  --dsw-radius-xl: 2px;
+  --dsw-radius-panel: 2px;
+  --dsh-windows-content-radius: 2px;
+}
+
 html[data-lg-language='constructivist'] body:not([data-ds-dark-theme]) {
   --dsw-alias-bg-base: #efe6d2;
   --dsw-alias-bg-layer-1: #f6efe0;
@@ -1734,9 +1746,12 @@ html[data-lg-language='constructivist'] body [class*='titleGroup'] > span:not([c
   text-underline-offset: 8px;
   text-decoration-skip-ink: none;
 }
+/* Disabled send: a muted red stamp, not an empty outline box. */
 html[data-lg-language='constructivist'] body button:is([aria-label='发送消息'], [aria-label='Send message']):disabled {
-  background-color: transparent;
-  box-shadow: inset 0 0 0 2px var(--dsw-alias-label-tertiary);
+  background-color: color-mix(in srgb, var(--lg-red) 42%, var(--dsw-alias-bg-module-platform));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--lg-ink) 70%, transparent);
+  filter: none;
+  opacity: 1;
 }
 html[data-lg-language='constructivist'] .lg-pet-body,
 html[data-lg-language='constructivist'] .lg-pet {
