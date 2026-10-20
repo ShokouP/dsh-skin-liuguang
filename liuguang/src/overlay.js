@@ -113,8 +113,10 @@ const DEFAULT_KNOBS = {
   measure: 'wide',
   rules: 'off',
   size: 'normal',
-  poster: 'auto',
-  stamp: 'clock',
+  // Off by default: the step count already lives at the sidebar foot, and a
+  // second big number in the corner only adds noise.
+  poster: 'off',
+  stamp: 'off',
   state: 'auto',
   metrics: 'on',
   petScale: 1,
@@ -387,23 +389,20 @@ function createOverlay(config) {
         const set = function (name, value) { root.style.setProperty(name, Math.round(value) + 'px') }
         try {
           const card = document.querySelector('[data-composer-card]')
-          const content = document.querySelector('[data-conversation-content]')
           if (card) {
             const rect = card.getBoundingClientRect()
             set('--lg-mark-speed-left', rect.left + 10)
             set('--lg-mark-speed-top', rect.top - 22)
-            // Tokens/cache ride above the composer's right corner, not in the
-            // header row where the workspace controls live.
-            set('--lg-mark-tok-right', window.innerWidth - rect.right + 8)
-            set('--lg-mark-tok-bottom', window.innerHeight - rect.top + 24)
-          }
-          if (content) {
-            const rect = content.getBoundingClientRect()
-            // The context gauge runs down the chat column's left margin, clear
-            // of the turn-index dots on the right.
-            set('--lg-mark-ctx-left', rect.left + 2)
-            set('--lg-mark-ctx-top', rect.top + 10)
-            set('--lg-mark-ctx-height', rect.height - 20)
+            // Tokens/cache sit under the header on the right edge of the chat
+            // column — far from the composer corner, which already carries the
+            // clock stamp and the model chip.
+            set('--lg-mark-tok-right', 44)
+            set('--lg-mark-tok-top', 96)
+            // Context gauge: a rule in the gutter left of the composer, running
+            // from below the header down to the composer edge.
+            set('--lg-mark-ctx-left', rect.left - 14)
+            set('--lg-mark-ctx-top', 94)
+            set('--lg-mark-ctx-height', Math.max(60, rect.top - 94 - 18))
           }
         } catch {
           /* keep the stylesheet defaults */
@@ -421,7 +420,7 @@ function createOverlay(config) {
       return function () {
         window.clearInterval(timer)
         window.removeEventListener('resize', place)
-        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-ctx-left', '--lg-mark-ctx-top', '--lg-mark-ctx-height', '--lg-mark-tok-right', '--lg-mark-tok-bottom', '--lg-ctx-pct']) {
+        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-ctx-left', '--lg-mark-ctx-top', '--lg-mark-ctx-height', '--lg-mark-tok-right', '--lg-mark-tok-top', '--lg-ctx-pct']) {
           root.style.removeProperty(name)
         }
       }

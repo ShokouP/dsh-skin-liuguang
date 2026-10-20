@@ -2302,8 +2302,8 @@ html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
 
 /* Header corner: session tokens and cache hit rate. */
 .lg-mark-tok {
-  right: var(--lg-mark-tok-right, 24px);
-  bottom: var(--lg-mark-tok-bottom, 130px);
+  right: var(--lg-mark-tok-right, 44px);
+  top: var(--lg-mark-tok-top, 96px);
   text-align: right;
   padding-bottom: 3px;
   border-bottom: 2px solid var(--lg-red);
