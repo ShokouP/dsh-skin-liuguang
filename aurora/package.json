@@ -1,14 +1,25 @@
 {
   "name": "dsh-theme-aurora",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Aurora — a calm, luminous skin for the DeepSeek Harness web GUI, applied as a revertible host plugin.",
+  "description": "Aurora — a calm, luminous skin for the DeepSeek Harness GUI, applied as a revertible plugin.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
+    "./client": "./lib/client.js",
     "./package.json": "./package.json",
     "./theme.css": "./lib/aurora.css"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "scripts": {
+    "build": "node tools/build.mjs"
   },
   "license": "MIT"
 }

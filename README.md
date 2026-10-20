@@ -1,157 +1,114 @@
-# Aurora — DSH 前端皮肤（可一键撤销）
+# Aurora — 液态玻璃皮肤 + 鲸鱼娘桌宠（可一键撤销）
 
 <div align="center">
 
-**给 DeepSeek Harness 的 Web GUI 换一层"极光"皮肤：深色调、冷光、玻璃质感；一键装，一键撤。**
+**给 DeepSeek Harness GUI 换一身「液态玻璃」：青玉色玻璃面板、缓慢流动的背景光、可调的磨砂强度，外加一只住在右下角的 DeepSeek 鲸鱼娘。**
 
-![深色](screenshots/after-dark.png)
-![浅色](screenshots/after-light.png)
+![桌宠](screenshots/after-dark.png)
+![外观面板](screenshots/panel-dark.png)
 
 </div>
 
 ---
 
-## 这是什么
+## 功能
 
-Aurora 是一个**纯宿主侧插件**（host plugin），不打包任何浏览器 JS，只做两件事：
-
-1. 通过 `webserver/index-inject` 往每个 `index.html` 里注入一段 `<style>`；
-2. 用 `--dsw-*` 设计 token 覆盖 + 少量语义选择器，重绘配色、层次、圆角、光影和动效。
-
-因为改的是"注入"而不是"安装目录里的文件"，所以：
-
-- 不碰 `app.asar`，不破坏签名，升级 DSH 不会冲突；
-- 卸载 = 删掉一个 patch 条目，界面立刻回到原样；
-- 深浅色都适配，跟随系统切换实时生效。
-
-## 效果对比
-
-| 原版（深色） | Aurora（深色） |
+| | |
 |---|---|
-| ![before](screenshots/before-dark.png) | ![after](screenshots/after-dark.png) |
-
-具体变化：
-
-- **环境光**：整屏铺一层极光径向渐变（靛蓝 + 青色），主区不再是死黑一块；
-- **层次**：侧栏、画布、输入卡、菜单使用独立的表面阶梯 + 0.5px 发丝边；
-- **输入卡**：顶部一道极光高光边，聚焦时外发光；
-- **强调色**：发送键是全局唯一的高饱和渐变按钮，选中会话带左侧强调条；
-- **标题**：Hero 标题从白渐变到靛蓝，"预览版"徽章改为渐变底；
-- **细节**：圆角、滚动条、选区、菜单投影、代码块统一重做。
+| **液态玻璃** | 侧栏/输入框/对话框/右栏使用半透明面板 + `backdrop-filter` 磨砂，背景是一层缓慢漂移的青玉色光场 |
+| **可调外观** | 右下角 `✦` 打开面板：5 套强调色（青玉/樱粉/琥珀/天青/石墨）、磨砂 0–60px、通透 20–100%、动效 灵动/微光/静止；选择存在 `localStorage` |
+| **鲸鱼娘桌宠** | 可拖拽、会上下浮动、点一下说一句话（"在的～""写完这段就休息一下吧"…），打开外观面板时自动让位 |
+| **跟随 DSH** | 深/浅色跟随系统或设置；键盘焦点、`prefers-reduced-motion`、无 `backdrop-filter` 引擎都有降级 |
+| **一键撤销** | 删一个 patch 条目 + 两个 junction，刷新即回原版；不碰 `app.asar` |
 
 ## 一键应用 / 撤销
 
-> 本机 PowerShell 执行策略是 `Restricted`，所以用 `.cmd` 包装器（内部带 `-ExecutionPolicy Bypass`）。
+> 本机 PowerShell 是 `Restricted` 策略，用 `.cmd` 包装器（内部 `-ExecutionPolicy Bypass`）。
 
 ```bat
-:: 应用到桌面端（默认 profile: desktop）
-D:\yangchengcup\ui\apply.cmd
-
-:: 撤销
-D:\yangchengcup\ui\revert.cmd
+D:\yangchengcup\ui\apply.cmd            :: 装（默认 desktop profile）
+D:\yangchengcup\ui\revert.cmd           :: 撤
+D:\yangchengcup\ui\restart-dsh.cmd      :: 重启 DSH（首次装载需要）
 ```
 
-也可以指定其它 profile：
+`apply.ps1` 会：
 
-```bat
-apply.cmd web        :: 给 `dsh web` 那个 profile 装
-revert.cmd web
-```
+1. 把两个包复制成 `link:` 依赖并 mount 成 junction 到本仓库
+   （`<DSH_HOME>\profiles\<name>\node_modules\dsh-theme-aurora{,-browser}`）；
+2. 在 `cordis.patch.yml` 末尾追加带标记的 `insert` 块；
+3. 首次修改前把原 patch 备份为 `cordis.patch.yml.aurora-backup`。
 
-装完**刷新页面**（`Ctrl+R` / `F5`）生效；撤销同样刷新即可。
+**为什么需要重启一次**：桌面端渲染进程的 `index.html` 来自 `app.asar` 里的静态文件，不会经过宿主注入；皮肤靠浏览器端插件（`lib/client.js`）在渲染进程里挂载，而宿主的客户端插件元数据在启动时按 specifier 缓存。装好后重启一次 DSH，之后**改 CSS 只需刷新**——浏览器端会从 `/aurora/theme.css` 拉最新样式表。
 
-`apply.ps1` 做的事：
-
-1. 把 `aurora/` 复制到 `<DSH_HOME>\profiles\<name>\node_modules\dsh-theme-aurora`；
-2. 在 `cordis.patch.yml` 末尾追加一个带标记的 `insert` 块：
-   ```yaml
-   # >>> aurora-skin (managed by ui/apply.ps1 - remove with ui/revert.ps1)
-   - insert:
-       - id: theme-aurora
-         name: dsh-theme-aurora
-   # <<< aurora-skin
-   ```
-3. 第一次修改前，把原 `cordis.patch.yml` 备份成 `cordis.patch.yml.aurora-backup`。
-
-`revert.ps1` 反向删除这两样东西；加 `-RestoreBackup` 还能把 patch 文件整个还原。**整个过程不重启进程**——DSH 的 HMR 会监听 patch 变化并热加载/热卸载。
-
-## 为什么能"随时撤销"
-
-三重保险：
-
-1. **运行时**：`revert.cmd` 删 patch 条目 → 插件热卸载 → 刷新即原版（不用重装 DSH）；
-2. **文件级**：`cordis.patch.yml.aurora-backup` 是改动前的原件；
-3. **版本级**：本目录是独立 git 仓库，`git checkout .` / `git revert` 可回到任意一次提交。
-
-## 目录结构
+## 架构
 
 ```
 ui/
-├─ apply.ps1 / apply.cmd      装
-├─ revert.ps1 / revert.cmd    撤
-├─ overlay.yml                实验用 --patch 覆盖层（等价于 apply 的 patch 块）
-├─ aurora/                    插件包（会被复制进 profile）
-│  ├─ package.json
-│  └─ lib/
-│     ├─ index.js             宿主侧：注入 style 行 + 写 activity.log
-│     └─ aurora.css           全部视觉改动（唯一需要改的文件）
-└─ screenshots/               前后对比
+├─ aurora/                       主包：宿主注入 + 浏览器端样式
+│  ├─ lib/index.js               index-inject + /aurora/theme.css
+│  ├─ lib/aurora.css             全部视觉（液态玻璃 / 桌宠 / 面板）
+│  ├─ lib/client.js              生成物：baked CSS + 拉取最新 CSS
+│  ├─ src/overlay.js             外观面板 + 鲸鱼娘（React，slot: shell.overlay）
+│  └─ tools/build.mjs            把 CSS + overlay 打包成 client.js
+├─ aurora-browser/               浏览器面：唯一挂 overlay / 提供 /aurora/ping 与宠物图
+│  ├─ assets/pet.png             鲸鱼娘立绘（CC BY-NC-SA，见下）
+│  └─ lib/index.js               /aurora/ping、/aurora/pet.png
+├─ assets/pet/CREDITS.md         宠物图署名与许可
+└─ screenshots/                  前后对比
 ```
 
-## 改样式
+两个包的分工是有原因的：主包负责 `webserver/index-inject` 与样式表；浏览器面包负责浏览器端条目、桌宠 slot 和宠物资源。宿主的客户端插件元数据按 specifier 缓存，所以**新增**一个 specifier 才能在宿主运行时被识别——这也是当初不重启也能生效的原因。
 
-1. 编辑 `aurora/lib/aurora.css`；
-2. 重新执行 `apply.cmd`（把新文件同步进 profile）；
-3. 刷新页面。
+## 自定义
 
-CSS 分三层，改哪层心里有数：
+**界面上**：右下角 `✦` → 面板调色/磨砂/通透/动效，自动保存。
 
-| 层 | 内容 | 说明 |
-|---|---|---|
-| Layer 1 | `--dsw-*` token（light / dark 两套） | 改一处，全站生效；主题包定义的语义变量全部可覆盖 |
-| Layer 2 | 材质：body 环境光、侧栏、输入卡 | 用 `[data-slot]`、`[data-composer-card]` 等语义钩子 |
-| Layer 3 | 细节：滚动条、选区、动效降级 | 尊重 `prefers-reduced-motion` |
+**配置文件里**（`cordis.patch.yml` 的插件条目）：
 
-选择器统一写成 `html body ...`：客户端 bundle 会在 `<head>` 后面追加自己的样式表，同优先级下后写的赢，这里靠**特指度**压过它，而不是靠顺序。
-
-## 已验证 / 已知限制
-
-**已验证**（本机，2026-10-20）：
-
-- 热加载：修改 `cordis.patch.yml` 后，运行中的 desktop 宿主进程（pid 46464）没有重启就加载了插件，`lib/activity.log` 记录 `apply pid=46464`；
-- 热卸载：`revert.ps1` 后界面回到原版（见 `screenshots/before-dark.png`）；
-- 视觉：用独立 `aurora-lab` profile 起了一个 `dsh web` 实例，CDP 驱动无头 Edge 截图逐版校对（深浅两套）；
-- token 兼容性：从桌面端 `app.asar` 抽出的 `design_platform.css` 与 npm 版**同为 19081 字节**，190 个 token 完全一致；用到的组件钩子（`data-composer-card`、`data-conversation-content`、`role=treeitem[aria-selected]`、`previewBadge`）在桌面端 bundle 中均存在。
-
-**限制**：
-
-- 纯 CSS，没有副作用逻辑；客户端组件卸载时不会"记住"主题，刷新即重新注入；
-- 若 DSH 后续重命名 token 或语义钩子，个别细节会失效（配色不会全崩，因为 token 是官方稳定契约）；
-- 深色/浅色取自系统或设置里的偏好，皮肤本身不新增主题选项。
-
-## 卸载干净
-
-```bat
-revert.cmd
-:: 想连备份一起删：
-del "%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml.aurora-backup"
+```yaml
+- id: theme-aurora
+  name: dsh-theme-aurora
+  config:
+    accent: "#4fb59a"   # 强调色
+    accent2: "#8ee0c8"  # 辅助色
+    blur: 26            # 0–60
+    glass: 1            # 0.2–1
+    motion: full        # full | subtle | none
 ```
+
+优先级：**面板（inline）> 配置（`:root`）> 样式表默认值**。配置值经过白名单校验（仅 6 位 hex、数值 clamp、枚举），不会作为 CSS 原文拼接。
+
+**改代码**：编辑 `aurora/lib/aurora.css` → 刷新即生效（浏览器端拉取最新）；改了 `src/overlay.js` 则需要 `node aurora/tools/build.mjs` 重新生成 `client.js`。
+
+## 安全与自查
+
+已按两项审查修过（详见提交记录）：
+
+- `</style` 大小写绕过 → `/<\/style/gi`；
+- CSS 读取失败不再让整个 index 404/400：listener 内 try/catch + 上次成功副本兜底；
+- `/aurora/ping`：仅 GET/HEAD、仅 loopback、3s 限速、token 只留 `[a-zA-Z0-9-]`、日志 256KB 轮转；
+- `/aurora/theme.css`：先读后写头、405、`content-length`、`nosniff`、`no-store`；
+- 浏览器端 fetch：仅 `text/css`、≤2MiB、3s 超时；样式一律走 `textContent`（不解析 HTML）；
+- 配置读取 own-property + null 安全，异常值回落默认，不进入 CSS 文本；
+- 两个包不抢同一个 slot / route：只有 `aurora-browser` 挂 overlay 和宠物资源。
+
+**已知取舍**：
+
+- 侧栏在 Windows 标题栏模式下关掉 `backdrop-filter`（否则会把 `position:fixed` 的标题栏按钮重新锚定并被裁掉）；
+- 输入框卡片不做 `backdrop-filter`、聚焦不做 `transform`（避免把卡内 `/`、`@` 弹层困进层叠上下文）；
+- 折叠的右栏面板不绘制（它有 720px 宽、悬在中栏上，任何背景/模糊都会遮挡对话）；
+- 宠物图是社区二创（CC BY-NC-SA 4.0），**不在 MIT 范围内**；商用请自行取得授权。
+
+## 宠物形象来源
+
+`assets/pet.png` 来自 [xxnb0/deepseek-chan-fanpack](https://github.com/xxnb0/deepseek-chan-fanpack) 的「新Q_01_挥手问好」，形象溯源 **上善无形** 与 **ZipZipPipe**，原作者标注 **CC BY-NC-SA 4.0**。本仓库做了去底、裁切与 320px 缩放，仍需署名、非商业、相同方式共享。详见 [`assets/pet/CREDITS.md`](assets/pet/CREDITS.md)。
 
 ## 仓库
 
 - 远端：<https://github.com/ShokouP/dsh-aurora>（**private**）
-- 当前分支：`main`，已跟踪 `origin/main`
-
-之所以先建私有库：截图里带着你侧栏的会话标题（"查找 AstrBot 中的云妹妹" 之类）。要转公开的话，先把 `screenshots/` 换成打过码的版本，再在 GitHub 仓库 Settings → Danger Zone 里改可见性。
-
-后续推送（FlClash 代理仅在本机直连 GitHub 失败时才需要）：
+- 代码 MIT；宠物图 CC BY-NC-SA 4.0。
 
 ```powershell
 $env:HTTP_PROXY='http://127.0.0.1:7890'; $env:HTTPS_PROXY='http://127.0.0.1:7890'
-cd D:\yangchengcup\ui
-git add -A; git commit -m "tune: ..."; git push
+cd D:\yangchengcup\ui; git add -A; git commit -m "tune: ..."; git push
 ```
-
----
-
-MIT License. 皮肤只改表现层，不改变 DSH 的任何行为。

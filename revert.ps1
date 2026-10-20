@@ -17,23 +17,51 @@ $dshHome = if ($env:DSH_HOME) { $env:DSH_HOME } else { Join-Path $env:USERPROFIL
 $profileDir = Join-Path $dshHome (Join-Path 'profiles' $ProfileName)
 $patchFile = Join-Path $profileDir 'cordis.patch.yml'
 $dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora')
+$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora-browser')
 
 if (Test-Path $patchFile) {
   $patch = [System.IO.File]::ReadAllText($patchFile)
   $stripped = [regex]::Replace($patch, '(?ms)^# >>> aurora-skin.*?^# <<< aurora-skin\r?\n?', '')
   if ($stripped -ne $patch) {
-    [System.IO.File]::WriteAllText($patchFile, $stripped.TrimEnd() + "`n", (New-Object System.Text.UTF8Encoding($false)))
+    $remaining = @($stripped -split "`r?`n" | Where-Object {
+        $line = $_.Trim()
+        $line.Length -gt 0 -and -not $line.StartsWith('#')
+      })
+    # Leave a valid (possibly empty) root list behind.
+    $text = if ($remaining.Count -eq 0) { "[]`n" } else { $stripped.TrimEnd() + "`n" }
+    [System.IO.File]::WriteAllText($patchFile, $text, (New-Object System.Text.UTF8Encoding($false)))
     Write-Host "unpatched -> $patchFile"
   } else {
     Write-Host "no aurora block in $patchFile"
   }
 }
 
-if (Test-Path $dest) {
-  Remove-Item -Recurse -Force $dest
-  Write-Host "removed  -> $dest"
-} else {
-  Write-Host "package not installed in $profileDir"
+foreach ($package in @($dest, $browserDest)) {
+  if (Test-Path $package) {
+    $existing = Get-Item $package -Force
+    if ($existing.LinkType) { $existing.Delete() } else { Remove-Item -Recurse -Force $package }
+    Write-Host "removed  -> $package"
+  }
+}
+
+# Drop the `link:` dependencies the skin declared, so the app's next install
+# stops mounting it.
+$manifestPath = Join-Path $profileDir 'package.json'
+if (Test-Path $manifestPath) {
+  $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
+  $changed = $false
+  foreach ($name in @('dsh-theme-aurora', 'dsh-theme-aurora-browser')) {
+    if ($manifest.dependencies -and ($manifest.dependencies.PSObject.Properties.Name -contains $name)) {
+      $manifest.dependencies.PSObject.Properties.Remove($name)
+      $changed = $true
+    }
+  }
+  if ($changed) {
+    $manifest | ConvertTo-Json -Depth 8 | ForEach-Object {
+      [System.IO.File]::WriteAllText($manifestPath, $_ + "`n", (New-Object System.Text.UTF8Encoding($false)))
+    }
+    Write-Host "deps     -> $manifestPath (link entries removed)"
+  }
 }
 
 if ($RestoreBackup) {

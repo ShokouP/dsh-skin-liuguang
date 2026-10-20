@@ -1,4 +1,6 @@
-# Plugin runtime diagnostics (written by the installed copy)
+# Plugin runtime diagnostics (written through the linked install)
 aurora/lib/activity.log
+aurora-browser/lib/activity.log
+*.log
 *.aurora-backup
 node_modules/
