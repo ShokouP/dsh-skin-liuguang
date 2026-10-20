@@ -34,6 +34,12 @@ const PACK_ID = /^[a-z0-9][a-z0-9-]{0,31}$/
 const PACK_SCAN_MS = 5000
 const MAX_PACK_BYTES = 512 * 1024
 
+/** Pet sprites: a fixed set, so the route can whitelist instead of sanitising. */
+const EXPRESSIONS = new Set(['wave', 'done', 'surprised', 'pout', 'task', 'slack', 'sleepy'])
+const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
+const PING_INTERVAL_MS = 3000
+let lastPing = 0
+
 let cache = { key: '', css: '' }
 let packCache = { at: 0, packs: [], problems: [] }
 
@@ -265,6 +271,67 @@ export function apply(ctx, config) {
           'x-content-type-options': 'nosniff',
         })
         res.end(req.method === 'HEAD' ? undefined : text)
+      },
+    }))
+
+    // Pet expression sprites: local, credited fan-art assets
+    // (assets/pet/CREDITS.md). Names are checked against a whitelist, so no path
+    // can escape the folder.
+    child.effect(() => child.webServer.register({
+      kind: 'prefix',
+      path: '/liuguang/pet',
+      handler: (req, res) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD' })
+          res.end()
+          return
+        }
+        const name = (new URL(req.url ?? '/', 'http://local').pathname.split('/').pop() ?? '').replace(/\.png$/i, '')
+        if (!EXPRESSIONS.has(name)) {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
+          return
+        }
+        let bytes
+        try {
+          bytes = readFileSync(fileURLToPath(new URL(`../assets/pet/${name}.png`, import.meta.url)))
+        } catch {
+          send(res, 404, 'text/plain; charset=utf-8', 'not found', 'no-store')
+          return
+        }
+        res.writeHead(200, {
+          'content-type': 'image/png',
+          'content-length': bytes.byteLength,
+          'cache-control': 'public, max-age=3600',
+          'x-content-type-options': 'nosniff',
+        })
+        res.end(req.method === 'HEAD' ? undefined : bytes)
+      },
+    }))
+
+    // Liveness beacon: the browser half calls this after injecting the skin.
+    // Loopback-only, GET/HEAD-only, throttled, token reduced to a safe alphabet.
+    child.effect(() => child.webServer.register({
+      kind: 'exact',
+      path: '/liuguang/ping',
+      handler: (req, res) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD', 'cache-control': 'no-store' })
+          res.end()
+          return
+        }
+        res.writeHead(204, { 'cache-control': 'no-store' })
+        res.end()
+
+        if (!LOOPBACK.has(req.socket?.remoteAddress ?? '')) return
+        const now = Date.now()
+        if (now - lastPing < PING_INTERVAL_MS) return
+        lastPing = now
+        const raw = new URL(req.url ?? '/', 'http://local').searchParams.get('loaded') ?? ''
+        const token = raw.replace(/[^a-zA-Z0-9-]/g, '').slice(0, 64)
+        if (token.length === 0) return
+        if (ctx.logger !== undefined && typeof ctx.logger.debug === 'function') {
+          ctx.logger.debug(`liuguang: client ping ${token}`)
+        }
       },
     }))
   })

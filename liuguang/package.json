@@ -66,15 +66,14 @@
   "bugs": {
     "url": "https://github.com/ShokouP/dsh-theme-liuguang/issues"
   },
-  "dependencies": {
-    "dsh-theme-liuguang-browser": "github:ShokouP/dsh-theme-liuguang-browser"
-  },
+  "dependencies": {},
   "files": [
     "lib/index.js",
     "lib/client.js",
     "lib/liuguang.css",
     "src",
     "tools",
+    "assets",
     "cordis.patch.yml",
     "README.md"
   ],

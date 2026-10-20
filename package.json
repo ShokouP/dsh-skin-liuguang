@@ -50,15 +50,13 @@
       "note": "Styled through --dsw-* tokens plus semantic hooks; no CSS-module class names are referenced."
     }
   },
-  "dependencies": {
-    "dsh-theme-liuguang-browser": "github:ShokouP/dsh-theme-liuguang-browser"
-  },
   "files": [
     "liuguang/lib/index.js",
     "liuguang/lib/client.js",
     "liuguang/lib/liuguang.css",
     "liuguang/src",
     "liuguang/tools",
+    "liuguang/assets",
     "cordis.patch.yml",
     "README.md"
   ],

@@ -75,11 +75,10 @@ if ($patch.Contains($markerStart)) {
 }
 
 $dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang')
-$browserSource = Join-Path (Split-Path $source -Parent) 'liuguang-browser'
-$browserDest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-liuguang-browser')
+# Host half and browser half ship in one package now; the old separate browser
+# package is cleaned up below as legacy.
 $packages = @(
   @{ Name = 'dsh-theme-liuguang'; Path = $source; Dest = $dest }
-  @{ Name = 'dsh-theme-liuguang-browser'; Path = $browserSource; Dest = $browserDest }
 ) | Where-Object { Test-Path (Join-Path $_.Path 'package.json') }
 
 # The Desktop profile's node_modules is owned by pnpm (the app's plugin manager
@@ -100,7 +99,8 @@ foreach ($package in $packages) {
 # package (or a bundle id) that no longer exists.
 $legacy = @(
   'dsh-theme-aurora', 'dsh-theme-aurora-browser',
-  'dsh-skin-liuguang', 'dsh-skin-liuguang-browser'
+  'dsh-skin-liuguang', 'dsh-skin-liuguang-browser',
+  'dsh-theme-liuguang-browser'
 )
 foreach ($name in $legacy) {
   if ($manifest.dependencies -and ($manifest.dependencies.PSObject.Properties.Name -contains $name)) {
