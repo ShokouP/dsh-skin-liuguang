@@ -54,6 +54,10 @@ const DEFAULT_KNOBS = {
   stamp: 'on',
   motif: 'ring',
   tracking: 'normal',
+  measure: 'wide',
+  rules: 'off',
+  num: 'black',
+  weight: 'normal',
   petScale: 1,
   chatty: 2,
   petVisible: true,
@@ -109,6 +113,10 @@ function normalizeKnobs(input, fallback) {
     stamp: pick(source.stamp, ['on', 'off'], base.stamp),
     motif: pick(source.motif, ['ring', 'diagonal', 'none'], base.motif),
     tracking: pick(source.tracking, ['tight', 'normal', 'wide'], base.tracking),
+    measure: pick(source.measure, ['wide', 'mid', 'narrow'], base.measure),
+    rules: pick(source.rules, ['off', 'on'], base.rules),
+    num: pick(source.num, ['black', 'mono', 'serif'], base.num),
+    weight: pick(source.weight, ['light', 'normal', 'strong'], base.weight),
     petScale: clamp(source.petScale, 0.8, 1.4, base.petScale),
     chatty: Math.round(clamp(source.chatty, 0, 2, base.chatty)),
     petVisible: typeof source.petVisible === 'boolean' ? source.petVisible : base.petVisible,
@@ -141,6 +149,10 @@ function applyKnobs(knobs) {
   root.setAttribute('data-lg-stamp', knobs.stamp)
   root.setAttribute('data-lg-motif', knobs.motif)
   root.setAttribute('data-lg-tracking', knobs.tracking)
+  root.setAttribute('data-lg-measure', knobs.measure)
+  root.setAttribute('data-lg-rules', knobs.rules)
+  root.setAttribute('data-lg-num', knobs.num)
+  root.setAttribute('data-lg-weight', knobs.weight)
   root.style.setProperty('--lg-no', '"' + (knobs.poster === 'off' ? '01' : knobs.poster) + '"')
 }
 
@@ -408,10 +420,14 @@ function createOverlay(config) {
             })
           }))),
       segRow('网格', [['none', '无'], ['fine', '细'], ['bold', '粗']], knobs.grid, function (value) { return { grid: value } }),
+      segRow('版心', [['wide', '宽'], ['mid', '中'], ['narrow', '窄']], knobs.measure, function (value) { return { measure: value } }),
+      segRow('分栏线', [['off', '无'], ['on', '开']], knobs.rules, function (value) { return { rules: value } }),
       groupLabel('装饰'),
       segRow('编号', [['off', '无'], ['01', '01'], ['02', '02'], ['03', '03']], knobs.poster, function (value) { return { poster: value } }),
+      segRow('字号', [['black', '黑体'], ['mono', '等宽'], ['serif', '衬线']], knobs.num, function (value) { return { num: value } }),
       segRow('印章', [['on', '开'], ['off', '关']], knobs.stamp, function (value) { return { stamp: value } }),
       segRow('母题', [['ring', '圆'], ['diagonal', '斜线'], ['none', '无']], knobs.motif, function (value) { return { motif: value } }),
+      segRow('红块', [['light', '少'], ['normal', '中'], ['strong', '多']], knobs.weight, function (value) { return { weight: value } }),
       groupLabel('字体'),
       segRow('字距', [['tight', '紧'], ['normal', '标准'], ['wide', '宽']], knobs.tracking, function (value) { return { tracking: value } }))
 
@@ -478,6 +494,8 @@ function createOverlay(config) {
     const shownLine = line || (expression === 'sleepy' ? 'zzz…' : '')
 
     return React.createElement('div', { className: 'lg-layer' },
+      // Column guides for the constructivist language (CSS decides visibility).
+      React.createElement('div', { className: 'lg-guides', 'aria-hidden': 'true' }),
       React.createElement('button', {
         className: 'lg-launcher' + (open ? ' is-open' : ''),
         'aria-label': '个性化',

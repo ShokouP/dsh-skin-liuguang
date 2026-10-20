@@ -1798,7 +1798,7 @@ html[data-lg-language='constructivist'] .lg-panel-title {
    `inset: auto` is required — the glass language stretched this pseudo element
    over the whole card, and a partial override would leave a washed highlight. */
 html[data-lg-language='constructivist'] body [data-composer-card]::after {
-  content: 'LIUGUANG · 01';
+  content: 'LIUGUANG · ' var(--lg-no, '01');
   display: block;
   position: absolute;
   inset: auto;
@@ -2087,4 +2087,94 @@ html[data-lg-language='constructivist'] .lg-group-label {
 html[data-lg-language='constructivist'] .lg-swatch {
   width: 24px;
   height: 24px;
+}
+
+/* =====================================================================
+   Constructivism v4 — measure, column rules, numeral face, red weight.
+   ===================================================================== */
+
+/* Column guides: two hairlines across the page, like a print layout. */
+.lg-guides {
+  display: none;
+}
+html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::before,
+html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: color-mix(in srgb, var(--lg-ink) 16%, transparent);
+}
+html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::before {
+  left: calc(19vw + (81vw / 3));
+}
+html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::after {
+  left: calc(19vw + (81vw / 3) * 2);
+}
+
+/* Measure: a narrower text column, as a printed page would have.
+   The scroll container ignores inline padding in this layout, so the column is
+   narrowed on the composer seat and the message column instead. */
+html[data-lg-language='constructivist'][data-lg-measure='mid'] body [data-composer-seat],
+html[data-lg-language='constructivist'][data-lg-measure='mid'] body [data-conversation-content] {
+  padding-inline: 7%;
+}
+html[data-lg-language='constructivist'][data-lg-measure='narrow'] body [data-composer-seat],
+html[data-lg-language='constructivist'][data-lg-measure='narrow'] body [data-conversation-content] {
+  padding-inline: 15%;
+}
+html[data-lg-language='constructivist'][data-lg-measure='narrow'] body [data-composer-card] {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* Numeral face: black letter, monospace, or didone serif. */
+html[data-lg-language='constructivist'][data-lg-num='mono'] .lg-layer::before {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, 'SF Mono', monospace;
+  letter-spacing: -0.08em;
+}
+html[data-lg-language='constructivist'][data-lg-num='serif'] .lg-layer::before {
+  font-family: 'Songti SC', 'SimSun', 'Georgia', serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+/* Red weight: how much ink the page spends. */
+html[data-lg-language='constructivist'][data-lg-weight='light'] body::after {
+  height: 3px;
+}
+html[data-lg-language='constructivist'][data-lg-weight='strong'] body::after {
+  height: 9px;
+}
+html[data-lg-language='constructivist'][data-lg-weight='light'] .lg-layer::before {
+  color: color-mix(in srgb, var(--lg-red) 9%, transparent);
+}
+html[data-lg-language='constructivist'][data-lg-weight='strong'] .lg-layer::before {
+  color: color-mix(in srgb, var(--lg-red) 26%, transparent);
+}
+html[data-lg-language='constructivist'][data-lg-weight='light'] .lg-layer::after {
+  opacity: 0.18;
+}
+html[data-lg-language='constructivist'][data-lg-weight='strong'] .lg-layer::after {
+  opacity: 0.5;
+}
+html[data-lg-language='constructivist'][data-lg-weight='light'] body [data-composer-card]::before {
+  width: 4px;
+}
+html[data-lg-language='constructivist'][data-lg-weight='strong'] body [data-composer-card]::before {
+  width: 13px;
+}
+html[data-lg-language='constructivist'][data-lg-weight='light'] body [role='treeitem'][aria-selected='true'] {
+  background-color: color-mix(in srgb, var(--lg-red) 60%, var(--dsw-alias-bg-base));
+}
+html[data-lg-language='constructivist'][data-lg-weight='strong'] body [role='treeitem'][aria-selected='true'] {
+  box-shadow: 4px 4px 0 0 var(--lg-ink);
 }
