@@ -137,13 +137,19 @@ revert.cmd
 del "%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml.aurora-backup"
 ```
 
-## 发布到 GitHub（走 FlClash 代理）
+## 仓库
+
+- 远端：<https://github.com/ShokouP/dsh-aurora>（**private**）
+- 当前分支：`main`，已跟踪 `origin/main`
+
+之所以先建私有库：截图里带着你侧栏的会话标题（"查找 AstrBot 中的云妹妹" 之类）。要转公开的话，先把 `screenshots/` 换成打过码的版本，再在 GitHub 仓库 Settings → Danger Zone 里改可见性。
+
+后续推送（FlClash 代理仅在本机直连 GitHub 失败时才需要）：
 
 ```powershell
 $env:HTTP_PROXY='http://127.0.0.1:7890'; $env:HTTPS_PROXY='http://127.0.0.1:7890'
 cd D:\yangchengcup\ui
-git remote add origin https://github.com/<you>/dsh-aurora.git
-git push -u origin main
+git add -A; git commit -m "tune: ..."; git push
 ```
 
 ---
