@@ -56,24 +56,27 @@
 
 ## 安装
 
-### 方式一：从 GitHub 直接装（推荐，已实测）
+### 方式一：npm（推荐，一行装）
 
-> 需要本机有 `pnpm`（`npm i -g pnpm`）。DSH 会把 git 插件交给 pnpm 安装。
+[![npm](https://img.shields.io/npm/v/dsh-theme-liuguang?label=npm)](https://www.npmjs.com/package/dsh-theme-liuguang)
 
 ```bat
-cd /d %USERPROFILE%
-dsh plugin add github:ShokouP/dsh-theme-liuguang
+npm i -g pnpm
+dsh plugin add dsh-theme-liuguang
 ```
 
 安装后**重启一次 DSH**，右下角出现 `✦` 即为成功。
 
-卸载：
+卸载：`dsh plugin remove dsh-theme-liuguang`
+
+### 方式二：从 GitHub 直接装（npm 不可用时的等价路径，已实测）
 
 ```bat
-dsh plugin remove dsh-theme-liuguang
+npm i -g pnpm
+dsh plugin add github:ShokouP/dsh-theme-liuguang
 ```
 
-### 方式二：本仓库脚本（开发/本机）
+### 方式三：本仓库脚本（开发/本机）
 
 ```bat
 :: 1. 首次安装：把皮肤注册进当前 DSH profile（创建 junction + 写入 bundle 注册）
@@ -92,13 +95,7 @@ D:\yangchengcup\ui\revert.cmd -RestoreBackup     :: 连 profile 的 patch 一起
 
 多 profile：`apply.cmd -ProfileName web`；临时 profile 用于测试：`apply.cmd -ProfileName lab`。
 
-### 方式三：npm（等待发布）
-
-```bat
-dsh plugin add dsh-theme-liuguang
-```
-
-> npm 账号开了 2FA，发布需要 OTP；包 `dsh-theme-liuguang` 发布后这条命令即可用，届时也会进入插件市场索引。
+> 已发布到 npm：<https://www.npmjs.com/package/dsh-theme-liuguang>（当前 `0.3.0`）。
 
 ## 目录
 
