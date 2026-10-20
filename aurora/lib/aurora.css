@@ -861,3 +861,183 @@ html body ::-webkit-scrollbar-thumb:hover {
     animation: none !important;
   }
 }
+
+/* =====================================================================
+   Layer 6: premium details + personalization panel.
+   ===================================================================== */
+
+/* Film grain: a whisper of texture so flat colour fields read as material. */
+html body {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.26'/></svg>"),
+    radial-gradient(70% 55% at 50% 0%, color-mix(in srgb, var(--aurora-accent) 7%, transparent), transparent 74%);
+  background-blend-mode: overlay, normal;
+}
+
+/* Specular highlight that follows the pointer across the composer glass. */
+html body [data-composer-card]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(240px 180px at var(--aurora-mx, 50%) var(--aurora-my, 0%),
+    rgba(255, 255, 255, 0.10), transparent 70%);
+  opacity: 0.9;
+  transition: opacity 240ms var(--aurora-ease-glide);
+}
+html body[data-ds-dark-theme] [data-composer-card]::after {
+  background: radial-gradient(240px 180px at var(--aurora-mx, 50%) var(--aurora-my, 0%),
+    rgba(255, 255, 255, 0.07), transparent 70%);
+}
+
+/* Radius knob drives every skinned surface. */
+html body [data-composer-card] {
+  border-radius: calc(var(--aurora-radius, 24px) + 4px);
+}
+.aurora-panel {
+  border-radius: max(14px, calc(var(--aurora-radius, 24px) * 0.75));
+}
+
+/* Panel chrome: tabs + sections. */
+.aurora-panel {
+  max-height: min(72vh, 520px);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.aurora-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 3px;
+  margin: 0 0 10px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 12%, transparent);
+}
+.aurora-tab {
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+  color: var(--dsw-alias-label-tertiary);
+  background: transparent;
+  font-size: 11px;
+}
+.aurora-tab.is-active {
+  color: var(--dsw-alias-label-primary);
+  background-color: color-mix(in srgb, var(--aurora-accent) 20%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--dsw-alias-label-primary) 14%, transparent);
+}
+.aurora-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aurora-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+.aurora-toggle {
+  width: 38px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 16%, transparent);
+  transition: background-color 180ms var(--aurora-ease-glide);
+}
+.aurora-toggle span {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 2px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 220ms var(--aurora-ease-spring);
+}
+.aurora-toggle.is-on {
+  background-color: color-mix(in srgb, var(--aurora-accent) 72%, transparent);
+}
+.aurora-toggle.is-on span {
+  transform: translateX(18px);
+}
+.aurora-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+.aurora-custom input {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+}
+.aurora-expressions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 4px 0 2px;
+}
+.aurora-expression {
+  padding: 2px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--dsw-alias-label-primary) 12%, transparent);
+  transition: transform 200ms var(--aurora-ease-spring), box-shadow 200ms var(--aurora-ease-glide);
+}
+.aurora-expression img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+}
+.aurora-expression:hover {
+  transform: translateY(-1px);
+}
+.aurora-expression.is-active {
+  box-shadow: inset 0 0 0 1px var(--aurora-accent), 0 4px 14px color-mix(in srgb, var(--aurora-accent) 26%, transparent);
+}
+.aurora-about p {
+  margin: 2px 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 11px;
+  line-height: 17px;
+}
+.aurora-about .aurora-dim {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Pet: size knob + sleepy state + always-on bubble when a line is shown. */
+.aurora-pet {
+  width: calc(120px * var(--aurora-pet-scale, 1));
+  height: calc(120px * var(--aurora-pet-scale, 1));
+}
+.aurora-pet.is-sleepy .aurora-pet-body {
+  animation-duration: 8s;
+  filter: saturate(0.85) brightness(0.95);
+}
+.aurora-bubble {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body [data-composer-card]::after {
+    display: none;
+  }
+}

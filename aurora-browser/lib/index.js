@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 export const name = 'theme-aurora-browser'
 
 const ACTIVITY = new URL('./activity.log', import.meta.url)
-const PET = new URL('../assets/pet.png', import.meta.url)
+const EXPRESSIONS = new Set(['wave', 'done', 'surprised', 'pout', 'task', 'slack', 'sleepy'])
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1'])
 const PING_INTERVAL_MS = 3000
 const MAX_LOG_BYTES = 256 * 1024
@@ -52,19 +52,26 @@ export function apply(ctx) {
   ctx.on('dispose', () => note(`dispose pid=${process.pid}`))
 
   ctx.inject(['webServer'], (child) => {
-    // The pet sprite: a local, credited fan-art asset (see assets/CREDITS.md).
+    // Expression sprites: local, credited fan-art assets (assets/pet/CREDITS.md).
+    // The name is checked against a whitelist, so no path can escape the folder.
     child.effect(() => child.webServer.register({
-      kind: 'exact',
-      path: '/aurora/pet.png',
+      kind: 'prefix',
+      path: '/aurora/pet',
       handler: (req, res) => {
         if (req.method !== 'GET' && req.method !== 'HEAD') {
           res.writeHead(405, { allow: 'GET, HEAD' })
           res.end()
           return
         }
+        const name = (new URL(req.url ?? '/', 'http://local').pathname.split('/').pop() ?? '').replace(/\.png$/i, '')
+        if (!EXPRESSIONS.has(name)) {
+          res.writeHead(404, { 'cache-control': 'no-store' })
+          res.end()
+          return
+        }
         let bytes
         try {
-          bytes = readFileSync(fileURLToPath(PET))
+          bytes = readFileSync(fileURLToPath(new URL(`../assets/pet/${name}.png`, import.meta.url)))
         } catch {
           res.writeHead(404, { 'cache-control': 'no-store' })
           res.end()

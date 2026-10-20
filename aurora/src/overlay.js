@@ -1,12 +1,11 @@
-/* Aurora overlay: theme controls + the DeepSeek-chan desktop pet.
+/* Aurora overlay: personalization panel + the DeepSeek-chan pet.
  *
- * This file is embedded verbatim inside the generated browser half
- * (tools/build.mjs). It runs in the GUI renderer and assumes `React` is in
- * scope. No framework components are imported: everything is plain JSX-free
- * React plus the skin's own CSS classes.
+ * Embedded verbatim inside the generated browser half (tools/build.mjs); runs
+ * in the GUI renderer and assumes `React` is in scope. No UI framework imports:
+ * plain React plus the skin's own CSS classes.
  */
 
-const STORE_KEY = 'aurora.knobs.v1'
+const STORE_KEY = 'aurora.knobs.v2'
 const PET_KEY = 'aurora.pet.v1'
 
 const PRESETS = [
@@ -17,19 +16,29 @@ const PRESETS = [
   { id: 'graphite', label: '石墨', accent: '#8d97a8', accent2: '#c3cbd8' },
 ]
 
-const DEFAULT_KNOBS = { accent: '#4fb59a', accent2: '#8ee0c8', blur: 26, glass: 1, motion: 'full' }
+/** Expression pack: sprites served from /aurora/pet/<name>.png. */
+const EXPRESSIONS = {
+  wave: { label: '招呼', lines: ['在的～', '今天也要加油哦', '需要我做什么吗？'] },
+  done: { label: '完成', lines: ['搞定！', '交付完成 ✧', '这一段写得很漂亮'] },
+  surprised: { label: '惊讶', lines: ['诶？！', '这个 bug 有点意思', '等等，我看看…'] },
+  pout: { label: '鼓气', lines: ['唔…又报错了', '再试一次嘛', '不许熬夜！'] },
+  task: { label: '待命', lines: ['收到任务', '开始干活', '给我点时间'] },
+  slack: { label: '摸鱼', lines: ['摸一会儿鱼', '喝口水再继续', '偷懒也是生产力'] },
+  sleepy: { label: '犯困', lines: ['好困…', '让我眯一会儿', 'zzz…'] },
+}
 
-const LINES = [
-  '在的～',
-  '写完这段就休息一下吧',
-  '今天的 bug 也会自己跑掉的',
-  '要我陪你一起想吗？',
-  '别忘了喝水哦',
-  '摸鱼也是生产力',
-  '摸摸头 ✧',
-]
+const DEFAULT_KNOBS = {
+  accent: '#4fb59a',
+  accent2: '#8ee0c8',
+  blur: 26,
+  glass: 1,
+  motion: 'full',
+  radius: 24,
+  petScale: 1,
+  chatty: 2,
+  petVisible: true,
+}
 
-/** Clamp helper kept local so the overlay never trusts stored values. */
 function clamp(value, min, max, fallback) {
   const parsed = Number.parseFloat(value)
   if (!Number.isFinite(parsed)) return fallback
@@ -51,7 +60,7 @@ function writeStore(key, value) {
   try {
     window.localStorage.setItem(key, JSON.stringify(value))
   } catch {
-    /* private mode or quota: the skin still works for this page view */
+    /* private mode / quota: the skin still works for this page view */
   }
 }
 
@@ -60,12 +69,17 @@ function normalizeKnobs(input, fallback) {
   const source = input && typeof input === 'object' ? input : {}
   const base = fallback || DEFAULT_KNOBS
   const hex = (value, previous) => (typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : previous)
+  const pick = (value, allowed, previous) => (allowed.indexOf(value) >= 0 ? value : previous)
   return {
     accent: hex(source.accent, base.accent),
     accent2: hex(source.accent2, base.accent2),
     blur: Math.round(clamp(source.blur, 0, 60, base.blur)),
     glass: clamp(source.glass, 0.2, 1, base.glass),
-    motion: source.motion === 'none' || source.motion === 'subtle' || source.motion === 'full' ? source.motion : base.motion,
+    motion: pick(source.motion, ['full', 'subtle', 'none'], base.motion),
+    radius: Math.round(clamp(source.radius, 12, 32, base.radius)),
+    petScale: clamp(source.petScale, 0.8, 1.4, base.petScale),
+    chatty: Math.round(clamp(source.chatty, 0, 2, base.chatty)),
+    petVisible: typeof source.petVisible === 'boolean' ? source.petVisible : base.petVisible,
   }
 }
 
@@ -76,6 +90,8 @@ function applyKnobs(knobs) {
   root.style.setProperty('--aurora-accent-2', knobs.accent2)
   root.style.setProperty('--aurora-glass-blur', knobs.blur + 'px')
   root.style.setProperty('--aurora-glass', String(knobs.glass))
+  root.style.setProperty('--aurora-radius', knobs.radius + 'px')
+  root.style.setProperty('--aurora-pet-scale', String(knobs.petScale))
   root.style.setProperty('--aurora-anim', knobs.motion === 'none' ? 'none' : 'aurora-drift')
   root.style.setProperty('--aurora-drift', knobs.motion === 'subtle' ? '96s' : '54s')
   root.style.setProperty('--aurora-drift-opacity', knobs.motion === 'none' ? '0' : knobs.motion === 'subtle' ? '0.3' : '0.42')
@@ -84,69 +100,25 @@ function applyKnobs(knobs) {
 
 function PetWhale() {
   return React.createElement('svg', { viewBox: '0 0 120 120', className: 'aurora-pet-svg', 'aria-hidden': 'true' },
-    React.createElement('defs', null,
-      React.createElement('linearGradient', { id: 'auroraHair', x1: '0', y1: '0', x2: '0', y2: '1' },
-        React.createElement('stop', { offset: '0', stopColor: '#7fd6d0' }),
-        React.createElement('stop', { offset: '1', stopColor: '#2f7f9e' })),
-      React.createElement('linearGradient', { id: 'auroraHoodie', x1: '0', y1: '0', x2: '0', y2: '1' },
-        React.createElement('stop', { offset: '0', stopColor: '#fdfefe' }),
-        React.createElement('stop', { offset: '1', stopColor: '#dfe9f2' })),
-    ),
-    // tail (whale motif) behind the body
-    React.createElement('path', {
-      className: 'aurora-pet-tail',
-      d: 'M86 84c10-6 18-3 22 4-8 1-12 5-13 11-5-4-8-9-9-15z',
-      fill: '#8fd8e6',
-      opacity: '0.9',
-    }),
-    // body
-    React.createElement('path', {
-      d: 'M38 96c-6-12-8-24-6-34 2-12 12-18 28-18s26 6 28 18c2 10 0 22-6 34-4 8-12 12-22 12s-18-4-22-12z',
-      fill: 'url(#auroraHoodie)',
-      stroke: '#c8d8e6',
-      strokeWidth: '1.2',
-    }),
-    // hoodie pocket line
-    React.createElement('path', { d: 'M48 92h24', stroke: '#cfdde9', strokeWidth: '2', strokeLinecap: 'round' }),
-    // head
-    React.createElement('circle', { cx: '60', cy: '46', r: '26', fill: '#ffe9df', stroke: '#f3cdbd', strokeWidth: '1.2' }),
-    // hair back
-    React.createElement('path', {
-      d: 'M34 44c0-16 11-26 26-26s26 10 26 26c0 8-3 14-7 18 1-12-4-20-19-20s-20 8-19 20c-4-4-7-10-7-18z',
-      fill: 'url(#auroraHair)',
-    }),
-    // bangs
-    React.createElement('path', {
-      d: 'M38 42c3-9 11-14 22-14s19 5 22 14c-5-3-9-4-13-3-3 4-6 6-9 6s-6-2-9-6c-4-1-8 0-13 3z',
-      fill: 'url(#auroraHair)',
-    }),
-    // whale-tail ahoge
-    React.createElement('path', { d: 'M60 20c1-6 5-9 9-9-3 3-3 6-2 9-3-1-5-1-7 0z', fill: '#8fd8e6' }),
-    // eyes
-    React.createElement('g', { className: 'aurora-pet-eyes' },
-      React.createElement('ellipse', { cx: '51', cy: '50', rx: '4.2', ry: '5.4', fill: '#22303f' }),
-      React.createElement('ellipse', { cx: '69', cy: '50', rx: '4.2', ry: '5.4', fill: '#22303f' }),
-      React.createElement('circle', { cx: '52.6', cy: '48.2', r: '1.5', fill: '#ffffff' }),
-      React.createElement('circle', { cx: '70.6', cy: '48.2', r: '1.5', fill: '#ffffff' })),
-    // blush
-    React.createElement('ellipse', { cx: '43', cy: '58', rx: '4.4', ry: '2.6', fill: '#ffb3c1', opacity: '0.7' }),
-    React.createElement('ellipse', { cx: '77', cy: '58', rx: '4.4', ry: '2.6', fill: '#ffb3c1', opacity: '0.7' }),
-    // mouth
-    React.createElement('path', { d: 'M57 60c1.4 2 4.6 2 6 0', stroke: '#c4707f', strokeWidth: '1.6', strokeLinecap: 'round', fill: 'none' }),
-    // arms: one waving
-    React.createElement('g', { className: 'aurora-pet-wave' },
-      React.createElement('rect', { x: '27', y: '86', width: '9', height: '20', rx: '4.5', fill: '#fdfefe', stroke: '#c8d8e6', strokeWidth: '1.1' })),
-    React.createElement('rect', { x: '84', y: '88', width: '9', height: '18', rx: '4.5', fill: '#fdfefe', stroke: '#c8d8e6', strokeWidth: '1.1' }),
+    React.createElement('ellipse', { cx: '60', cy: '102', rx: '26', ry: '6', fill: 'rgba(10,20,30,0.25)' }),
+    React.createElement('circle', { cx: '60', cy: '58', r: '30', fill: '#e9f6ff', stroke: '#9cc7dd', strokeWidth: '2' }),
+    React.createElement('circle', { cx: '49', cy: '54', r: '5', fill: '#22303f' }),
+    React.createElement('circle', { cx: '71', cy: '54', r: '5', fill: '#22303f' }),
+    React.createElement('circle', { cx: '50.6', cy: '52', r: '1.6', fill: '#fff' }),
+    React.createElement('circle', { cx: '72.6', cy: '52', r: '1.6', fill: '#fff' }),
+    React.createElement('path', { d: 'M56 68c2 3 6 3 8 0', stroke: '#7a8fa0', strokeWidth: '2', fill: 'none', strokeLinecap: 'round' }),
+    React.createElement('path', { d: 'M32 52c-8-2-12 4-12 4 4 4 9 4 13 1z', fill: '#b9dcec' }),
+    React.createElement('path', { d: 'M88 52c8-2 12 4 12 4-4 4-9 4-13 1z', fill: '#b9dcec' }),
   )
 }
 
-/** Community whale-girl sprite, served by the host at /aurora/pet.png. */
-function PetSprite() {
+/** Expression sprite with an SVG fallback if an asset is missing. */
+function PetSprite({ expression }) {
   const [failed, setFailed] = React.useState(false)
   if (failed) return React.createElement(PetWhale, null)
   return React.createElement('img', {
     className: 'aurora-pet-img',
-    src: '/aurora/pet.png',
+    src: '/aurora/pet/' + expression + '.png',
     alt: '',
     draggable: false,
     onError: () => setFailed(true),
@@ -162,112 +134,225 @@ function ControlRow({ label, value, children }) {
 
 /**
  * Build the frame-wide overlay component.
- * @param config - validated-ish plugin config used as the knob defaults.
+ * @param config - plugin entry config used as the knob defaults.
  */
 function createOverlay(config) {
   const configDefaults = normalizeKnobs(config, DEFAULT_KNOBS)
   return function AuroraOverlay() {
-    const [knobs, setKnobs] = React.useState(() => normalizeKnobs(readStore(STORE_KEY, {}), configDefaults))
+    const [knobs, setKnobs] = React.useState(function () { return normalizeKnobs(readStore(STORE_KEY, {}), configDefaults) })
     const [open, setOpen] = React.useState(false)
-    const [line, setLine] = React.useState('在的～')
-    const [pet, setPet] = React.useState(() => {
+    const [tab, setTab] = React.useState('look')
+    const [expression, setExpression] = React.useState('wave')
+    const [line, setLine] = React.useState('')
+    const [pet, setPet] = React.useState(function () {
       const saved = readStore(PET_KEY, {})
-      return { right: clamp(saved.right, 8, 400, 32), bottom: clamp(saved.bottom, 8, 400, 96) }
+      return { right: clamp(saved.right, 8, 400, 32), bottom: clamp(saved.bottom, 8, 400, 120) }
     })
     const dragRef = React.useRef(null)
+    const idleTimer = React.useRef(null)
+    const lineTimer = React.useRef(null)
 
-    React.useEffect(() => { applyKnobs(knobs) }, [knobs])
-    React.useEffect(() => { writeStore(STORE_KEY, knobs) }, [knobs])
-    React.useEffect(() => { writeStore(PET_KEY, pet) }, [pet])
+    React.useEffect(function () { applyKnobs(knobs) }, [knobs])
+    React.useEffect(function () { writeStore(STORE_KEY, knobs) }, [knobs])
+    React.useEffect(function () { writeStore(PET_KEY, pet) }, [pet])
 
-    // Drag the pet with pointer capture; the offset is clamped to the window.
-    const onPointerDown = (event) => {
-      event.preventDefault()
-      dragRef.current = {
-        startX: event.clientX,
-        startY: event.clientY,
-        right: pet.right,
-        bottom: pet.bottom,
+    // Specular highlight follows the pointer across the glass.
+    React.useEffect(function () {
+      let frame = 0
+      const onMove = function (event) {
+        if (frame) return
+        frame = window.requestAnimationFrame(function () {
+          frame = 0
+          const root = document.documentElement
+          root.style.setProperty('--aurora-mx', event.clientX + 'px')
+          root.style.setProperty('--aurora-my', event.clientY + 'px')
+        })
       }
-      event.currentTarget.setPointerCapture(event.pointerId)
+      window.addEventListener('pointermove', onMove, { passive: true })
+      return function () {
+        window.removeEventListener('pointermove', onMove)
+        if (frame) window.cancelAnimationFrame(frame)
+        const root = document.documentElement
+        root.style.removeProperty('--aurora-mx')
+        root.style.removeProperty('--aurora-my')
+        root.removeAttribute('data-aurora-motion')
+      }
+    }, [])
+
+    // Idle → sleepy; any interaction wakes her up.
+    const armIdle = React.useCallback(function () {
+      window.clearTimeout(idleTimer.current)
+      idleTimer.current = window.setTimeout(function () { setExpression('sleepy') }, 90000)
+    }, [])
+    React.useEffect(function () {
+      armIdle()
+      return function () { window.clearTimeout(idleTimer.current) }
+    }, [armIdle])
+
+    const speak = function (key) {
+      const entry = EXPRESSIONS[key] || EXPRESSIONS.wave
+      const pick = entry.lines[Math.floor(Math.random() * entry.lines.length)]
+      setExpression(key)
+      setLine(pick)
+      window.clearTimeout(lineTimer.current)
+      lineTimer.current = window.setTimeout(function () { setLine('') }, 4200)
+      armIdle()
     }
-    const onPointerMove = (event) => {
+
+    const react = function () {
+      const keys = ['done', 'surprised', 'pout', 'task', 'slack']
+      speak(keys[Math.floor(Math.random() * keys.length)])
+    }
+
+    const onPointerDown = function (event) {
+      event.preventDefault()
+      dragRef.current = { startX: event.clientX, startY: event.clientY, right: pet.right, bottom: pet.bottom }
+      event.currentTarget.setPointerCapture(event.pointerId)
+      armIdle()
+    }
+    const onPointerMove = function (event) {
       const drag = dragRef.current
       if (!drag) return
       setPet({
-        right: clamp(drag.right - (event.clientX - drag.startX), 8, window.innerWidth - 120, 32),
-        bottom: clamp(drag.bottom - (event.clientY - drag.startY), 8, window.innerHeight - 120, 96),
+        right: clamp(drag.right - (event.clientX - drag.startX), 8, window.innerWidth - 140, 32),
+        bottom: clamp(drag.bottom - (event.clientY - drag.startY), 8, window.innerHeight - 140, 120),
       })
     }
-    const onPointerUp = () => { dragRef.current = null }
+    const onPointerUp = function () { dragRef.current = null }
 
-    const speak = () => {
-      const next = LINES[Math.floor(Math.random() * LINES.length)]
-      setLine(next)
-      setOpen(false)
+    const patch = function (next) {
+      setKnobs(function (current) { return normalizeKnobs(Object.assign({}, current, next), current) })
+    }
+    const tabButton = function (id, label) {
+      return React.createElement('button', {
+        key: id,
+        className: 'aurora-tab' + (tab === id ? ' is-active' : ''),
+        onClick: function () { setTab(id) },
+      }, label)
     }
 
-    const patch = (next) => setKnobs((current) => normalizeKnobs({ ...current, ...next }, current))
-
-    const panel = open && React.createElement('div', { className: 'aurora-panel', role: 'dialog', 'aria-label': '外观' },
-      React.createElement('div', { className: 'aurora-panel-title' },
-        React.createElement('span', null, '外观'),
-        React.createElement('button', { className: 'aurora-close', onClick: () => setOpen(false), 'aria-label': '关闭' }, '×')),
+    const lookTab = React.createElement('div', { className: 'aurora-section' },
       React.createElement('div', { className: 'aurora-swatches' },
-        PRESETS.map((preset) => React.createElement('button', {
-          key: preset.id,
-          className: 'aurora-swatch' + (knobs.accent === preset.accent ? ' is-active' : ''),
-          title: preset.label,
-          'aria-label': preset.label,
-          style: { background: 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')' },
-          onClick: () => patch({ accent: preset.accent, accent2: preset.accent2 }),
-        }))),
+        PRESETS.map(function (preset) {
+          return React.createElement('button', {
+            key: preset.id,
+            className: 'aurora-swatch' + (knobs.accent === preset.accent ? ' is-active' : ''),
+            title: preset.label,
+            'aria-label': preset.label,
+            style: { background: 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')' },
+            onClick: function () { patch({ accent: preset.accent, accent2: preset.accent2 }) },
+          })
+        }),
+        React.createElement('label', { className: 'aurora-custom', title: '自定义强调色' },
+          React.createElement('input', {
+            type: 'color', value: knobs.accent,
+            onChange: function (event) { patch({ accent: event.target.value }) },
+          }),
+          React.createElement('span', null, '自定义'))),
       React.createElement(ControlRow, { label: '磨砂', value: knobs.blur + 'px' },
         React.createElement('input', {
           className: 'aurora-range', type: 'range', min: '0', max: '60', step: '1', value: knobs.blur,
-          onChange: (event) => patch({ blur: event.target.value }),
+          onChange: function (event) { patch({ blur: event.target.value }) },
         })),
       React.createElement(ControlRow, { label: '通透', value: Math.round(knobs.glass * 100) + '%' },
         React.createElement('input', {
           className: 'aurora-range', type: 'range', min: '20', max: '100', step: '1', value: Math.round(knobs.glass * 100),
-          onChange: (event) => patch({ glass: Number(event.target.value) / 100 }),
+          onChange: function (event) { patch({ glass: Number(event.target.value) / 100 }) },
+        })),
+      React.createElement(ControlRow, { label: '圆角', value: knobs.radius + 'px' },
+        React.createElement('input', {
+          className: 'aurora-range', type: 'range', min: '12', max: '32', step: '1', value: knobs.radius,
+          onChange: function (event) { patch({ radius: event.target.value }) },
         })),
       React.createElement('div', { className: 'aurora-segment' },
-        [['full', '灵动'], ['subtle', '微光'], ['none', '静止']].map(([value, label]) =>
-          React.createElement('button', {
-            key: value,
-            className: 'aurora-seg' + (knobs.motion === value ? ' is-active' : ''),
-            onClick: () => patch({ motion: value }),
-          }, label))),
+        [['full', '灵动'], ['subtle', '微光'], ['none', '静止']].map(function (pair) {
+          return React.createElement('button', {
+            key: pair[0],
+            className: 'aurora-seg' + (knobs.motion === pair[0] ? ' is-active' : ''),
+            onClick: function () { patch({ motion: pair[0] }) },
+          }, pair[1])
+        })))
+
+    const petTab = React.createElement('div', { className: 'aurora-section' },
+      React.createElement('div', { className: 'aurora-inline' },
+        React.createElement('span', null, '显示桌宠'),
+        React.createElement('button', {
+          className: 'aurora-toggle' + (knobs.petVisible ? ' is-on' : ''),
+          'aria-pressed': knobs.petVisible ? 'true' : 'false',
+          onClick: function () { patch({ petVisible: !knobs.petVisible }) },
+        }, React.createElement('span', null))),
+      React.createElement(ControlRow, { label: '大小', value: Math.round(knobs.petScale * 100) + '%' },
+        React.createElement('input', {
+          className: 'aurora-range', type: 'range', min: '80', max: '140', step: '5',
+          value: Math.round(knobs.petScale * 100),
+          onChange: function (event) { patch({ petScale: Number(event.target.value) / 100 }) },
+        })),
+      React.createElement('div', { className: 'aurora-segment' },
+        [[0, '静默'], [1, '偶尔'], [2, '话痨']].map(function (pair) {
+          return React.createElement('button', {
+            key: pair[0],
+            className: 'aurora-seg' + (knobs.chatty === pair[0] ? ' is-active' : ''),
+            onClick: function () { patch({ chatty: pair[0] }) },
+          }, pair[1])
+        })),
+      React.createElement('div', { className: 'aurora-expressions' },
+        Object.keys(EXPRESSIONS).map(function (key) {
+          return React.createElement('button', {
+            key: key,
+            className: 'aurora-expression' + (expression === key ? ' is-active' : ''),
+            title: EXPRESSIONS[key].label,
+            onClick: function () { speak(key) },
+          }, React.createElement('img', { src: '/aurora/pet/' + key + '.png', alt: EXPRESSIONS[key].label, draggable: false }))
+        })),
       React.createElement('button', {
         className: 'aurora-reset',
-        onClick: () => setKnobs(configDefaults),
-      }, '恢复默认'))
+        onClick: function () { setPet({ right: 32, bottom: 120 }) },
+      }, '桌宠回到右下角'))
+
+    const aboutTab = React.createElement('div', { className: 'aurora-section aurora-about' },
+      React.createElement('p', null, 'Aurora · 液态玻璃皮肤 v0.4'),
+      React.createElement('p', null, '形象：上善无形 / ZipZipPipe（CC BY-NC-SA 4.0）'),
+      React.createElement('p', { className: 'aurora-dim' }, '皮肤只作用于表现层，不改动会话数据。'),
+      React.createElement('button', {
+        className: 'aurora-reset',
+        onClick: function () { setKnobs(configDefaults) },
+      }, '恢复默认外观'))
+
+    const panel = open && React.createElement('div', { className: 'aurora-panel', role: 'dialog', 'aria-label': '个性化' },
+      React.createElement('div', { className: 'aurora-panel-title' },
+        React.createElement('span', null, '个性化'),
+        React.createElement('button', { className: 'aurora-close', onClick: function () { setOpen(false) }, 'aria-label': '关闭' }, '×')),
+      React.createElement('div', { className: 'aurora-tabs' }, tabButton('look', '外观'), tabButton('pet', '桌宠'), tabButton('about', '关于')),
+      tab === 'look' ? lookTab : tab === 'pet' ? petTab : aboutTab)
+
+    const petVisible = knobs.petVisible && !open
+    const shownLine = line || (expression === 'sleepy' ? 'zzz…' : '')
 
     return React.createElement('div', { className: 'aurora-layer' },
       React.createElement('button', {
         className: 'aurora-launcher' + (open ? ' is-open' : ''),
-        'aria-label': '外观与桌宠',
-        title: '外观与桌宠',
-        onClick: () => setOpen((value) => !value),
+        'aria-label': '个性化',
+        title: '个性化',
+        onClick: function () { setOpen(function (value) { return !value }) },
       }, '✦'),
       panel,
-      React.createElement('div', {
-        className: 'aurora-pet' + (open ? ' is-hidden' : ''),
+      petVisible && React.createElement('div', {
+        className: 'aurora-pet' + (expression === 'sleepy' ? ' is-sleepy' : ''),
         style: { right: pet.right + 'px', bottom: pet.bottom + 'px' },
-        onPointerDown,
-        onPointerMove,
-        onPointerUp,
+        onPointerDown: onPointerDown,
+        onPointerMove: onPointerMove,
+        onPointerUp: onPointerUp,
         onPointerCancel: onPointerUp,
-        onClick: speak,
+        onClick: react,
+        onMouseEnter: function () { if (expression !== 'sleepy') setExpression('done') },
+        onMouseLeave: function () { if (expression === 'done') setExpression('wave') },
         role: 'button',
         tabIndex: 0,
-        onKeyDown: (event) => { if (event.key === 'Enter' || event.key === ' ') speak() },
+        onKeyDown: function (event) { if (event.key === 'Enter' || event.key === ' ') react() },
         'aria-label': 'DeepSeek 娘',
-        title: '点我',
       },
-        React.createElement('div', { className: 'aurora-bubble' }, line),
-        React.createElement('div', { className: 'aurora-pet-body' }, React.createElement(PetSprite, null)),
+        shownLine !== '' && React.createElement('div', { className: 'aurora-bubble' }, shownLine),
+        React.createElement('div', { className: 'aurora-pet-body' }, React.createElement(PetSprite, { expression: expression })),
       ))
   }
 }
@@ -275,11 +360,9 @@ function createOverlay(config) {
 /** Register the overlay on the frame-wide slot. */
 function mountOverlay(ctx, config) {
   const Overlay = createOverlay(config)
-  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
-    name: 'shell.overlay',
-    id: 'aurora',
-    order: 90,
-  }, Overlay))
+  ctx.slots.inject('shell.overlay', function () {
+    return ctx.slots.register({ name: 'shell.overlay', id: 'aurora', order: 90 }, Overlay)
+  })
 }
 
 /**
@@ -290,5 +373,5 @@ function mountOverlay(ctx, config) {
 function mountControls(ctx, config) {
   const slots = ctx.slots
   if (slots === undefined || slots === null || typeof slots.inject !== 'function') return
-  mountOverlay({ slots }, config)
+  mountOverlay({ slots: slots }, config)
 }
