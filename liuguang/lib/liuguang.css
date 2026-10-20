@@ -2291,3 +2291,43 @@ html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
 .lg-mark-tok .lg-mark-sub {
   text-align: right;
 }
+
+/* ---------------------------------------------------------------------
+   Metric margin: one typeset column to the left of the composer.
+   --------------------------------------------------------------------- */
+.lg-mark-margin {
+  position: fixed;
+  right: var(--lg-margin-right, 240px);
+  bottom: var(--lg-margin-bottom, 140px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 10px;
+  border-right: 3px solid var(--lg-red);
+  text-align: right;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--dsw-alias-label-primary);
+}
+.lg-margin-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  line-height: 1.25;
+}
+.lg-margin-row + .lg-margin-row {
+  padding-top: 2px;
+  border-top: 1px solid color-mix(in srgb, var(--lg-ink) 14%, transparent);
+}
+.lg-margin-num {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+.lg-margin-label {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}

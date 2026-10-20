@@ -47,19 +47,10 @@ function readMetrics() {
 
   // Percentages: the status line prints cache hit and context as bare numbers,
   // so classify by the word in front of each one ("缓存命中 99%" vs "66%").
-  let cache = ''
-  let ctx = ''
-  const percent = /(\d+(?:\.\d+)?)\s*%/g
-  let hit = percent.exec(text)
-  while (hit !== null) {
-    const before = text.slice(Math.max(0, hit.index - 10), hit.index)
-    if (/缓存/.test(before)) {
-      if (!cache) cache = hit[1]
-    } else {
-      ctx = hit[1]
-    }
-    hit = percent.exec(text)
-  }
+  // Only label-anchored percentages are trusted: guessing "the last percent on
+  // the page is context" printed cache-hit numbers under the wrong label.
+  const cache = grab(/缓存命中[^\d%]*(\d+(?:\.\d+)?)\s*%/) || grab(/缓存[^\d%]*(\d+(?:\.\d+)?)\s*%/)
+  const ctx = grab(/上下文(?:占用|用量)?[^\d%]*(\d+(?:\.\d+)?)\s*%/) || grab(/context[^\d%]*(\d+(?:\.\d+)?)\s*%/i)
 
   let workspace = ''
   try {
@@ -391,20 +382,10 @@ function createOverlay(config) {
           const card = document.querySelector('[data-composer-card]')
           if (card) {
             const rect = card.getBoundingClientRect()
-            set('--lg-mark-speed-left', rect.left + 10)
-            set('--lg-mark-speed-top', rect.top - 22)
-            // The step count sits in the gutter just left of the composer, with
-            // its tick facing the input box.
-            set('--lg-mark-steps-right', window.innerWidth - rect.left + 14)
-            set('--lg-mark-steps-top', rect.top + 16)
-            // Tokens/context/cache sit under the header on the right edge of the
-            // chat column — far from the composer corner, which already carries
-            // the model chip.
-            set('--lg-mark-tok-right', 44)
-            set('--lg-mark-tok-top', 96)
-            // Column guides span the message column only, never the whole page.
-            set('--lg-guides-top', rect.top - 26)
-            set('--lg-guides-height', Math.max(80, rect.top - 26 - 96))
+            // The metric margin is right-aligned against the composer's left
+            // edge so the red rule points at the box it describes.
+            set('--lg-margin-right', window.innerWidth - rect.left + 16)
+            set('--lg-margin-bottom', window.innerHeight - rect.top + 18)
           }
         } catch {
           /* keep the stylesheet defaults */
@@ -420,7 +401,7 @@ function createOverlay(config) {
       return function () {
         window.clearInterval(timer)
         window.removeEventListener('resize', place)
-        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-steps-right', '--lg-mark-steps-top', '--lg-mark-tok-right', '--lg-mark-tok-top', '--lg-guides-top', '--lg-guides-height']) {
+        for (const name of ['--lg-margin-right', '--lg-margin-bottom']) {
           root.style.removeProperty(name)
         }
       }
@@ -603,7 +584,6 @@ function createOverlay(config) {
             })
           }))),
       segRow('版心', [['wide', '宽'], ['mid', '中'], ['narrow', '窄']], knobs.measure, function (value) { return { measure: value } }),
-      segRow('标尺', [['off', '无'], ['80', '80 列'], ['120', '120 列'], ['both', '双标尺']], knobs.rules, function (value) { return { rules: value } }),
       groupLabel('阅读'),
       segRow('字号', [['small', '小'], ['normal', '标准'], ['large', '大']], knobs.size, function (value) { return { size: value } }),
       groupLabel('标识'),
@@ -674,30 +654,25 @@ function createOverlay(config) {
     const petVisible = knobs.petVisible && !open
     const shownLine = line || (expression === 'sleepy' ? 'zzz…' : '')
 
-    // Run metrics are printed as separate marks pinned to the surfaces they
-    // belong to (sidebar foot, composer edge, chat column rail), never as one
-    // free-floating panel.
-    const markNumber = function (value, label, sub) {
-      return React.createElement(React.Fragment, null,
-        React.createElement('span', { className: 'lg-mark-num' }, value || '—'),
-        React.createElement('span', { className: 'lg-mark-label' }, label),
-        sub ? React.createElement('span', { className: 'lg-mark-sub' }, sub) : null)
+    // Run metrics print as one margin column to the left of the composer:
+    // right-aligned typeset lines with a red rule facing the input box, so no
+    // numbers are scattered across the corners.
+    const marginRow = function (value, label, key) {
+      return React.createElement('div', { className: 'lg-margin-row', key: key },
+        React.createElement('span', { className: 'lg-margin-num' }, value || '—'),
+        React.createElement('span', { className: 'lg-margin-label' }, label))
     }
-    // Marks stay out of the way while the personalization panel is open.
-    const marks = !open && knobs.language === 'constructivist' && knobs.metrics === 'on' &&
+    const margin = !open && knobs.language === 'constructivist' && knobs.metrics === 'on' &&
       React.createElement('div', { className: 'lg-marks', 'aria-hidden': 'true' },
-        React.createElement('div', { className: 'lg-mark lg-mark-steps' },
-          markNumber(metrics.steps, '步', '轮次 ' + (metrics.turns || '—'))),
-        React.createElement('div', { className: 'lg-mark lg-mark-speed' },
-          markNumber(metrics.tps, 'tok/s')),
-        React.createElement('div', { className: 'lg-mark lg-mark-tok' },
-          markNumber(metrics.total, 'tok',
-            (metrics.ctx ? 'CTX ' + metrics.ctx + '% · ' : '') + '缓存 ' + (metrics.cache || '—') + '%')))
+        React.createElement('div', { className: 'lg-mark-margin' },
+          marginRow(metrics.steps, '步 · ' + (metrics.turns || '—') + ' 轮', 'steps'),
+          marginRow(metrics.tps, 'tok/s', 'tps'),
+          marginRow(metrics.total, 'tok', 'total'),
+          marginRow(metrics.cache ? metrics.cache + '%' : '', '缓存命中', 'cache'),
+          metrics.ctx ? marginRow(metrics.ctx + '%', '上下文', 'ctx') : null))
 
     return React.createElement('div', { className: 'lg-layer' },
-      // Column guides for the constructivist language (CSS decides visibility).
-      React.createElement('div', { className: 'lg-guides', 'aria-hidden': 'true' }),
-      marks,
+      margin,
       React.createElement('button', {
         className: 'lg-launcher' + (open ? ' is-open' : ''),
         'aria-label': '个性化',
