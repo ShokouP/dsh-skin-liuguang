@@ -48,8 +48,8 @@ foreach ($package in @($dest, $browserDest)) {
   }
 }
 
-# Drop the `link:` dependencies the skin declared, so the app's next install
-# stops mounting it.
+# Drop the `link:` dependencies the skin declared and its bundle registration,
+# so the app's next install stops mounting it.
 $manifestPath = Join-Path $profileDir 'package.json'
 if (Test-Path $manifestPath) {
   $manifest = Get-Content -Raw $manifestPath | ConvertFrom-Json
@@ -60,11 +60,18 @@ if (Test-Path $manifestPath) {
       $changed = $true
     }
   }
+  if ($manifest.dsh -and $manifest.dsh.profile -and $manifest.dsh.profile.bundles) {
+    $kept = @($manifest.dsh.profile.bundles | Where-Object { $_ -ne 'dsh-theme-aurora' })
+    if ($kept.Count -ne @($manifest.dsh.profile.bundles).Count) {
+      $manifest.dsh.profile.bundles = $kept
+      $changed = $true
+    }
+  }
   if ($changed) {
     $manifest | ConvertTo-Json -Depth 8 | ForEach-Object {
       [System.IO.File]::WriteAllText($manifestPath, $_ + "`n", (New-Object System.Text.UTF8Encoding($false)))
     }
-    Write-Host "deps     -> $manifestPath (link entries removed)"
+    Write-Host "manifest -> $manifestPath (deps + bundle entry removed)"
   }
 }
 

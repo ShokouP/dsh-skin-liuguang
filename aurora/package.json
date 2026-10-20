@@ -2,24 +2,36 @@
   "name": "dsh-theme-aurora",
   "version": "0.2.0",
   "private": true,
-  "description": "Aurora — a calm, luminous skin for the DeepSeek Harness GUI, applied as a revertible plugin.",
+  "description": "Aurora — a flat glass skin with a personalized overlay panel and a DeepSeek-chan pet, packaged as an installable DSH plugin bundle.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json",
     "./theme.css": "./lib/aurora.css"
   },
   "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [],
       "immediately": true
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.0-rc.2": "compatible"
+      },
+      "note": "Styled through --dsw-* tokens plus semantic hooks ([data-composer-card], [data-conversation-content], [data-sidebar-right-panel][data-sidebar-right-open], role=treeitem[aria-selected]); no CSS-module class names are referenced."
     }
   },
   "scripts": {
-    "build": "node tools/build.mjs"
+    "build": "node tools/build.mjs",
+    "check:contrast": "node tools/palette.mjs --check",
+    "palette": "node tools/palette.mjs"
   },
   "license": "MIT"
 }

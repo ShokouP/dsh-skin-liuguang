@@ -51,48 +51,27 @@ $patchFile = Join-Path $profileDir 'cordis.patch.yml'
 if (-not (Test-Path $profileDir)) { throw "profile not found: $profileDir" }
 if (-not (Test-Path $patchFile)) { throw "patch layer not found: $patchFile (start DSH once for this profile first)" }
 
+# The skin now ships its own bundle patch (aurora/cordis.patch.yml), the same
+# way dsh-market / dsh-snippets / dsh-deep-whale do. Older installs wrote an
+# insert block straight into the profile patch; remove that legacy block so the
+# two paths never produce duplicate entries.
 $markerStart = '# >>> aurora-skin (managed by ui/apply.ps1 - remove with ui/revert.ps1)'
-$markerEnd = '# <<< aurora-skin'
-$block = @(
-  $markerStart
-  '- insert:'
-  '    - id: theme-aurora'
-  '      name: dsh-theme-aurora'
-  '    - id: theme-aurora-browser'
-  '      name: dsh-theme-aurora-browser'
-  $markerEnd
-) -join "`n"
-
 $patch = [System.IO.File]::ReadAllText($patchFile)
-if ($patch.Contains($markerStart) -and -not $Force) {
-  Write-Host "patch entry already present in $patchFile"
-} else {
+if ($patch.Contains($markerStart)) {
   $backup = "$patchFile.aurora-backup"
   if (-not (Test-Path $backup)) {
     Copy-Item $patchFile $backup
     Write-Host "backup  -> $backup"
   }
-  if ($patch.Contains($markerStart)) {
-    # Remove only our insert list; the app may have appended entries inside the
-    # marker range while rewriting its patch file.
-    $patch = [regex]::Replace($patch, '(?m)^# >>> aurora-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
-    $patch = [regex]::Replace($patch, '(?m)^# <<< aurora-skin[^\r\n]*\r?\n?', '')
-  }
-
-  # An untouched profile ships `[]` (or nothing) as its patch list. Appending a
-  # block sequence after a flow `[]` is invalid YAML, so replace the empty root
-  # instead of adding to it.
-  $meaningful = @($patch -split "`r?`n" | Where-Object {
+  $patch = [regex]::Replace($patch, '(?m)^# >>> aurora-skin[^\r\n]*\r?\n- insert:\r?\n(?:[ ]{4}- [^\r\n]*\r?\n|[ ]{6}[^\r\n]*\r?\n)*', '')
+  $patch = [regex]::Replace($patch, '(?m)^# <<< aurora-skin[^\r\n]*\r?\n?', '')
+  $remaining = @($patch -split "`r?`n" | Where-Object {
       $line = $_.Trim()
       $line.Length -gt 0 -and -not $line.StartsWith('#')
     })
-  if ($meaningful.Count -eq 0 -or ($meaningful.Count -eq 1 -and $meaningful[0] -eq '[]')) {
-    $patch = ''
-  }
-  if ($patch.Length -gt 0 -and -not $patch.EndsWith("`n")) { $patch += "`n" }
-  if ($patch.Trim().Length -gt 0) { $patch = $patch.TrimEnd() + "`n`n" }
-  [System.IO.File]::WriteAllText($patchFile, $patch + $block + "`n", (New-Object System.Text.UTF8Encoding($false)))
-  Write-Host "patched -> $patchFile"
+  $text = if ($remaining.Count -eq 0) { "[]`n" } else { $patch.TrimEnd() + "`n" }
+  [System.IO.File]::WriteAllText($patchFile, $text, (New-Object System.Text.UTF8Encoding($false)))
+  Write-Host "legacy patch block removed -> $patchFile"
 }
 
 $dest = Join-Path $profileDir (Join-Path 'node_modules' 'dsh-theme-aurora')
@@ -114,6 +93,15 @@ if ($null -eq $manifest.dependencies) {
 }
 foreach ($package in $packages) {
   $manifest.dependencies | Add-Member -NotePropertyName $package.Name -NotePropertyValue ("link:" + ($package.Path -replace '\\', '/')) -Force
+}
+# Register the bundle so the loader applies aurora/cordis.patch.yml itself
+# (idempotent: only appended when missing).
+$bundleName = 'dsh-theme-aurora'
+$bundles = @($manifest.dsh.profile.bundles)
+if ($bundles -notcontains $bundleName) {
+  $bundles += $bundleName
+  $manifest.dsh.profile.bundles = $bundles
+  Write-Host "bundle  -> $bundleName (dsh.profile.bundles)"
 }
 $manifest | ConvertTo-Json -Depth 8 | ForEach-Object {
   [System.IO.File]::WriteAllText($manifestPath, $_ + "`n", (New-Object System.Text.UTF8Encoding($false)))
