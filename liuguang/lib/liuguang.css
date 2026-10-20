@@ -1530,13 +1530,11 @@ html[data-lg-language='constructivist'] body [role='treeitem'][aria-selected='tr
   color: #f6efe0 !important;
 }
 
-/* Composer: the hero poster — cream block, 2px ink frame, red edge band,
-   solid offset shadow. */
+/* Composer: the hero poster — cream block, 2px ink frame, solid offset shadow.
+   No decorative red stripe: the red only appears as a state signal (the frame
+   and the offset shadow turn red while the composer has focus). */
 html[data-lg-language='constructivist'] body [data-composer-card] {
   border-radius: 2px;
-  /* A real left border beats a pseudo-element here: the composer input paints
-     its own background, so an inner stripe would show as a floating red line. */
-  border-left: 8px solid var(--lg-red);
   background-image: none;
   background-color: var(--dsw-specific-input-major);
   position: relative;
@@ -1764,20 +1762,20 @@ html[data-lg-language='constructivist'] .lg-pet {
    hard focus ring, ruled title bar.
    --------------------------------------------------------------------- */
 
-/* Giant numeral behind the page, like a constructivist poster index.
-   Lives on the overlay layer: the app's own root paints over body::before. */
+/* Poster index number, kept small: a caption above the pet corner, not a
+   watermark across the workspace. */
 html[data-lg-language='constructivist'] .lg-layer::before {
-  content: '01';
+  content: var(--lg-no, '01');
   display: block;
   position: fixed;
-  right: 3vw;
-  bottom: 8vh;
-  font-size: min(44vh, 30vw);
-  line-height: 0.78;
+  right: 26px;
+  bottom: calc(var(--lg-pet-scale, 1) * 120px + 40px);
+  font-size: 30px;
+  line-height: 1;
   font-weight: 900;
-  letter-spacing: -0.05em;
-  color: color-mix(in srgb, var(--lg-red) 15%, transparent);
-  z-index: -1;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--lg-ink) 24%, transparent);
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -1801,11 +1799,9 @@ html[data-lg-language='constructivist'] .lg-panel-title {
   border-bottom: 2px solid var(--lg-red);
 }
 
-/* Annotated composer: a small ink stamp in the top-right corner.
-   `inset: auto` is required — the glass language stretched this pseudo element
-   over the whole card, and a partial override would leave a washed highlight. */
+/* Corner stamp: a live clock or the model name (set by the browser half). */
 html[data-lg-language='constructivist'] body [data-composer-card]::after {
-  content: 'LIUGUANG · ' var(--lg-no, '01');
+  content: var(--lg-stamp, 'LIUGUANG');
   display: block;
   position: absolute;
   inset: auto;
@@ -2100,31 +2096,40 @@ html[data-lg-language='constructivist'] .lg-swatch {
    Constructivism v4 — measure, column rules, numeral face, red weight.
    ===================================================================== */
 
-/* Column guides: two hairlines across the page, like a print layout. */
+/* Measure guides: a code line-length ruler, not a decorative column grid.
+   Measured in `ch` from the start of the message column; the 120-column rule is
+   printed in the spot ink because past it lines start to wrap. */
 .lg-guides {
   display: none;
 }
-html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides {
+html[data-lg-language='constructivist'][data-lg-rules='80'] .lg-guides,
+html[data-lg-language='constructivist'][data-lg-rules='120'] .lg-guides,
+html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides {
   display: block;
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
 }
-html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::before,
-html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::after {
+html[data-lg-language='constructivist'][data-lg-rules='80'] .lg-guides::before,
+html[data-lg-language='constructivist'][data-lg-rules='120'] .lg-guides::after,
+html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::before,
+html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
   width: 1px;
-  background: color-mix(in srgb, var(--lg-ink) 16%, transparent);
 }
-html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::before {
-  left: calc(19vw + (81vw / 3));
+html[data-lg-language='constructivist'][data-lg-rules='80'] .lg-guides::before,
+html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::before {
+  left: calc(20vw + 80ch);
+  background: color-mix(in srgb, var(--lg-ink) 18%, transparent);
 }
-html[data-lg-language='constructivist'][data-lg-rules='on'] .lg-guides::after {
-  left: calc(19vw + (81vw / 3) * 2);
+html[data-lg-language='constructivist'][data-lg-rules='120'] .lg-guides::after,
+html[data-lg-language='constructivist'][data-lg-rules='both'] .lg-guides::after {
+  left: calc(20vw + 120ch);
+  background: color-mix(in srgb, var(--lg-red) 26%, transparent);
 }
 
 /* Measure: a narrower text column, as a printed page would have.
@@ -2173,15 +2178,140 @@ html[data-lg-language='constructivist'][data-lg-weight='light'] .lg-layer::after
 html[data-lg-language='constructivist'][data-lg-weight='strong'] .lg-layer::after {
   opacity: 0.5;
 }
-html[data-lg-language='constructivist'][data-lg-weight='light'] body [data-composer-card] {
-  border-left-width: 4px;
-}
-html[data-lg-language='constructivist'][data-lg-weight='strong'] body [data-composer-card] {
-  border-left-width: 13px;
-}
 html[data-lg-language='constructivist'][data-lg-weight='light'] body [role='treeitem'][aria-selected='true'] {
   background-color: color-mix(in srgb, var(--lg-red) 60%, var(--dsw-alias-bg-base));
 }
 html[data-lg-language='constructivist'][data-lg-weight='strong'] body [role='treeitem'][aria-selected='true'] {
   box-shadow: 4px 4px 0 0 var(--lg-ink);
+}
+
+/* =====================================================================
+   Constructivism v5 — working marks.
+   The top rule turns into a moving hatch while the agent is working, which
+   is the only animation in this language and the only place red moves.
+   ===================================================================== */
+
+html[data-lg-language='constructivist'][data-lg-busy='on'] body::after {
+  height: 6px;
+  background-image: repeating-linear-gradient(45deg,
+    var(--lg-red) 0 7px,
+    transparent 7px 14px);
+  animation: lg-busy-hatch 1.1s linear infinite;
+}
+
+@keyframes lg-busy-hatch {
+  from { background-position: 0 0; }
+  to { background-position: 28px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-lg-language='constructivist'][data-lg-busy='on'] body::after {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Run metrics, printed as marks on the surfaces they describe:
+   steps at the sidebar foot, speed on the composer edge, the context gauge
+   down the chat column, tokens/cache in the header corner.
+   --------------------------------------------------------------------- */
+.lg-marks {
+  display: none;
+}
+html[data-lg-language='constructivist'][data-lg-metrics='on'] .lg-marks {
+  display: block;
+}
+.lg-mark {
+  position: fixed;
+  z-index: 1;
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--dsw-alias-label-primary);
+}
+.lg-mark-num {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.lg-mark-label {
+  margin-left: 3px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.lg-mark-sub {
+  display: block;
+  margin-top: 3px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* Sidebar foot: this session's step count, with the turn count as a caption. */
+.lg-mark-steps {
+  left: 24px;
+  bottom: 88px;
+  padding-left: 8px;
+  border-left: 3px solid var(--lg-red);
+}
+.lg-mark-steps .lg-mark-num {
+  font-size: 22px;
+}
+
+/* Composer edge: throughput, printed just above the frame. */
+.lg-mark-speed {
+  left: var(--lg-mark-speed-left, 20px);
+  top: var(--lg-mark-speed-top, 0);
+}
+.lg-mark-speed .lg-mark-num {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+.lg-mark-speed .lg-mark-label {
+  letter-spacing: 0.1em;
+}
+
+/* Chat column rail: context usage as a gauge filled from the bottom. */
+.lg-mark-ctx {
+  left: var(--lg-mark-ctx-left, 0);
+  top: var(--lg-mark-ctx-top, 0);
+  width: 3px;
+  height: var(--lg-mark-ctx-height, 60vh);
+  background: color-mix(in srgb, var(--lg-ink) 14%, transparent);
+}
+.lg-mark-ctx::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--lg-ctx-pct, 0) * 1%);
+  background: var(--lg-red);
+}
+.lg-mark-ctx-label {
+  position: absolute;
+  top: -2px;
+  left: 9px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+}
+
+/* Header corner: session tokens and cache hit rate. */
+.lg-mark-tok {
+  right: var(--lg-mark-tok-right, 24px);
+  bottom: var(--lg-mark-tok-bottom, 130px);
+  text-align: right;
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--lg-red);
+}
+.lg-mark-tok .lg-mark-num {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+}
+.lg-mark-tok .lg-mark-sub {
+  text-align: right;
 }

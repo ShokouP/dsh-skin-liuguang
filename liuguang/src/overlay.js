@@ -25,6 +25,64 @@ const SPOTS = [
   { id: 'ink', label: '墨', color: '#141414' },
 ]
 
+/**
+ * Read the live run metrics off the app's status line and header, so the
+ * constructivist data block prints real numbers instead of decoration.
+ * Every field is optional: whatever the status line omits stays blank.
+ */
+function readMetrics() {
+  let text = ''
+  try {
+    text = (document.body && document.body.innerText) || ''
+  } catch {
+    text = ''
+  }
+  const grab = function (pattern, group) {
+    const hit = pattern.exec(text)
+    return hit && hit[group || 1] ? String(hit[group || 1]).trim() : ''
+  }
+  let total = ''
+  const tokens = /(\d+(?:\.\d+)?)\s*([KMG])\s*tok/i.exec(text)
+  if (tokens) total = tokens[1] + ' ' + tokens[2].toUpperCase()
+
+  // Percentages: the status line prints cache hit and context as bare numbers,
+  // so classify by the word in front of each one ("缓存命中 99%" vs "66%").
+  let cache = ''
+  let ctx = ''
+  const percent = /(\d+(?:\.\d+)?)\s*%/g
+  let hit = percent.exec(text)
+  while (hit !== null) {
+    const before = text.slice(Math.max(0, hit.index - 10), hit.index)
+    if (/缓存/.test(before)) {
+      if (!cache) cache = hit[1]
+    } else {
+      ctx = hit[1]
+    }
+    hit = percent.exec(text)
+  }
+
+  let workspace = ''
+  try {
+    const element = document.querySelector('[data-conversation-header-leading], [data-slot="conversation.hero.workspace"]')
+    if (element) {
+      const first = (element.innerText || '').split('\n')[0].trim()
+      if (first) workspace = first.slice(0, 22)
+    }
+  } catch {
+    /* header is optional */
+  }
+  return {
+    workspace,
+    steps: grab(/(\d[\d,]*)\s*步/),
+    turns: grab(/(\d[\d,]*)\s*轮/),
+    tps: grab(/(\d+(?:\.\d+)?)\s*tok\/s/i),
+    cache,
+    ctx,
+    total,
+    money: grab(/花费[^\d¥￥$]*[¥￥$]?\s*([\d.]+)/) || grab(/[¥￥]\s*([\d.]+)/),
+  }
+}
+
 /** Expression pack: sprites served from /liuguang/pet/<name>.png. */
 const EXPRESSIONS = {
   wave: { label: '招呼', lines: ['在的～', '今天也要加油哦', '需要我做什么吗？'] },
@@ -46,18 +104,19 @@ const DEFAULT_KNOBS = {
   glass: 1,
   motion: 'full',
   radius: 24,
-  // Constructivist print-shop knobs (independent of the glass material knobs).
+  // Constructivist knobs. These are working controls, not decoration:
+  // paper/spot set the print palette, measure and rules set the reading column,
+  // size sets the body type scale, and the poster/stamp/state marks surface live
+  // session facts (step count, clock or model, agent busy state).
   paper: 'cream',
   spot: 'red',
-  grid: 'fine',
-  poster: '01',
-  stamp: 'on',
-  motif: 'ring',
-  tracking: 'normal',
   measure: 'wide',
   rules: 'off',
-  num: 'black',
-  weight: 'normal',
+  size: 'normal',
+  poster: 'auto',
+  stamp: 'clock',
+  state: 'auto',
+  metrics: 'on',
   petScale: 1,
   chatty: 2,
   petVisible: true,
@@ -108,15 +167,13 @@ function normalizeKnobs(input, fallback) {
     radius: Math.round(clamp(source.radius, 12, 32, base.radius)),
     paper: pick(source.paper, ['cream', 'ash', 'kraft', 'blue'], base.paper),
     spot: pick(source.spot, ['red', 'vermilion', 'ochre', 'prussian', 'ink'], base.spot),
-    grid: pick(source.grid, ['none', 'fine', 'bold'], base.grid),
-    poster: pick(source.poster, ['off', '01', '02', '03'], base.poster),
-    stamp: pick(source.stamp, ['on', 'off'], base.stamp),
-    motif: pick(source.motif, ['ring', 'diagonal', 'none'], base.motif),
-    tracking: pick(source.tracking, ['tight', 'normal', 'wide'], base.tracking),
     measure: pick(source.measure, ['wide', 'mid', 'narrow'], base.measure),
-    rules: pick(source.rules, ['off', 'on'], base.rules),
-    num: pick(source.num, ['black', 'mono', 'serif'], base.num),
-    weight: pick(source.weight, ['light', 'normal', 'strong'], base.weight),
+    rules: pick(source.rules, ['off', '80', '120', 'both'], base.rules),
+    size: pick(source.size, ['small', 'normal', 'large'], base.size),
+    poster: pick(source.poster, ['auto', 'off', '01', '02', '03'], base.poster),
+    stamp: pick(source.stamp, ['clock', 'model', 'off'], base.stamp),
+    state: pick(source.state, ['auto', 'off'], base.state),
+    metrics: pick(source.metrics, ['on', 'off'], base.metrics),
     petScale: clamp(source.petScale, 0.8, 1.4, base.petScale),
     chatty: Math.round(clamp(source.chatty, 0, 2, base.chatty)),
     petVisible: typeof source.petVisible === 'boolean' ? source.petVisible : base.petVisible,
@@ -140,20 +197,27 @@ function applyKnobs(knobs) {
   // `data-lg-motion` scales it instead of overwriting it.
   root.setAttribute('data-lg-motion', knobs.motion)
 
-  // Constructivist print-shop axes: paper stock, spot ink, grid, poster number,
-  // corner stamp, geometric motif and display tracking. All CSS-owned.
+  // Constructivist working axes: paper stock, spot ink, reading column, code
+  // ruler, body type scale, poster number, corner stamp and busy state.
   root.setAttribute('data-lg-paper', knobs.paper)
   root.setAttribute('data-lg-spot', knobs.spot)
-  root.setAttribute('data-lg-grid', knobs.grid)
-  root.setAttribute('data-lg-poster', knobs.poster)
-  root.setAttribute('data-lg-stamp', knobs.stamp)
-  root.setAttribute('data-lg-motif', knobs.motif)
-  root.setAttribute('data-lg-tracking', knobs.tracking)
   root.setAttribute('data-lg-measure', knobs.measure)
   root.setAttribute('data-lg-rules', knobs.rules)
-  root.setAttribute('data-lg-num', knobs.num)
-  root.setAttribute('data-lg-weight', knobs.weight)
-  root.style.setProperty('--lg-no', '"' + (knobs.poster === 'off' ? '01' : knobs.poster) + '"')
+  root.setAttribute('data-lg-size', knobs.size)
+  root.setAttribute('data-lg-stamp', knobs.stamp)
+  root.setAttribute('data-lg-state', knobs.state)
+  root.setAttribute('data-lg-metrics', knobs.metrics)
+  const fixed = knobs.poster === '01' || knobs.poster === '02' || knobs.poster === '03' ? knobs.poster : '01'
+  root.style.setProperty('--lg-no', '"' + fixed + '"')
+
+  // Body type scale is an inline custom property on <body>, so it has to be set
+  // through the style object rather than a stylesheet rule.
+  try {
+    const sizes = { small: '13px', normal: '14px', large: '16px' }
+    document.body.style.setProperty('--dsh-content-font-size', sizes[knobs.size] || '14px')
+  } catch {
+    /* body may not exist yet during early boot */
+  }
 }
 
 function PetWhale() {
@@ -211,6 +275,7 @@ function createOverlay(config) {
     const lineTimer = React.useRef(null)
     const [packs, setPacks] = React.useState([])
     const [packProblems, setPackProblems] = React.useState(0)
+    const [metrics, setMetrics] = React.useState(readMetrics)
 
     React.useEffect(function () { applyKnobs(knobs) }, [knobs])
     React.useEffect(function () { writeStore(STORE_KEY, knobs) }, [knobs])
@@ -242,6 +307,125 @@ function createOverlay(config) {
       link.href = '/liuguang/packs/' + knobs.pack + '.css?v=' + Date.now()
       document.head.appendChild(link)
     }, [knobs.pack])
+
+    // Poster number in "auto" mode: print the live step count of this session,
+    // read from the status line ("24 轮 1158 步 · …"). Falls back to 01.
+    React.useEffect(function () {
+      if (knobs.language !== 'constructivist' || knobs.poster !== 'auto') return undefined
+      const root = document.documentElement
+      const read = function () {
+        let steps = ''
+        try {
+          const match = /(\d[\d,]*)\s*步/.exec(document.body.innerText || '')
+          if (match) steps = match[1].replace(/,/g, '').slice(0, 5)
+        } catch {
+          /* innerText is best-effort */
+        }
+        root.style.setProperty('--lg-no', '"' + (steps || '01') + '"')
+      }
+      read()
+      const timer = window.setInterval(read, 2500)
+      return function () {
+        window.clearInterval(timer)
+        root.style.setProperty('--lg-no', '"01"')
+      }
+    }, [knobs.language, knobs.poster])
+
+    // Corner stamp: a live clock, or the model currently answering.
+    React.useEffect(function () {
+      if (knobs.language !== 'constructivist' || knobs.stamp === 'off') return undefined
+      const root = document.documentElement
+      const read = function () {
+        if (knobs.stamp === 'clock') {
+          const now = new Date()
+          const hh = String(now.getHours()).padStart(2, '0')
+          const mm = String(now.getMinutes()).padStart(2, '0')
+          root.style.setProperty('--lg-stamp', '"LIUGUANG · ' + hh + ':' + mm + '"')
+          return
+        }
+        let model = 'LIUGUANG'
+        try {
+          const match = /DeepSeek[-\s]?(V[\w.-]+|Chat)/i.exec(document.body.innerText || '')
+          if (match && match[1]) model = String(match[1]).toUpperCase().replace(/[^A-Z0-9.-]/g, '').slice(0, 18)
+        } catch {
+          /* fall back to the product name */
+        }
+        root.style.setProperty('--lg-stamp', '"' + model + '"')
+      }
+      read()
+      const timer = window.setInterval(read, knobs.stamp === 'clock' ? 30000 : 8000)
+      return function () {
+        window.clearInterval(timer)
+        root.style.removeProperty('--lg-stamp')
+      }
+    }, [knobs.language, knobs.stamp])
+
+    // Busy mark: a stop control only exists while a turn is running, so its
+    // presence is a reliable "agent is working" signal.
+    React.useEffect(function () {
+      if (knobs.language !== 'constructivist' || knobs.state === 'off') return undefined
+      const root = document.documentElement
+      const read = function () {
+        const busy = document.querySelector('[aria-label*="停止"], [aria-label*="Stop"], [aria-label*="取消"]') !== null
+        root.setAttribute('data-lg-busy', busy ? 'on' : 'off')
+      }
+      read()
+      const timer = window.setInterval(read, 1200)
+      return function () {
+        window.clearInterval(timer)
+        root.removeAttribute('data-lg-busy')
+      }
+    }, [knobs.language, knobs.state])
+
+    // Live run metrics, spread as marks pinned to the surfaces they belong to:
+    // step count at the sidebar foot, speed at the composer's top edge, the
+    // context gauge down the chat column's right edge, tokens/cache in the corner.
+    React.useEffect(function () {
+      if (knobs.language !== 'constructivist' || knobs.metrics === 'off') return undefined
+      const root = document.documentElement
+      const place = function () {
+        const set = function (name, value) { root.style.setProperty(name, Math.round(value) + 'px') }
+        try {
+          const card = document.querySelector('[data-composer-card]')
+          const content = document.querySelector('[data-conversation-content]')
+          if (card) {
+            const rect = card.getBoundingClientRect()
+            set('--lg-mark-speed-left', rect.left + 10)
+            set('--lg-mark-speed-top', rect.top - 22)
+            // Tokens/cache ride above the composer's right corner, not in the
+            // header row where the workspace controls live.
+            set('--lg-mark-tok-right', window.innerWidth - rect.right + 8)
+            set('--lg-mark-tok-bottom', window.innerHeight - rect.top + 24)
+          }
+          if (content) {
+            const rect = content.getBoundingClientRect()
+            // The context gauge runs down the chat column's left margin, clear
+            // of the turn-index dots on the right.
+            set('--lg-mark-ctx-left', rect.left + 2)
+            set('--lg-mark-ctx-top', rect.top + 10)
+            set('--lg-mark-ctx-height', rect.height - 20)
+          }
+        } catch {
+          /* keep the stylesheet defaults */
+        }
+      }
+      const read = function () {
+        place()
+        const next = readMetrics()
+        setMetrics(next)
+        root.style.setProperty('--lg-ctx-pct', String(Number(next.ctx) || 0))
+      }
+      read()
+      const timer = window.setInterval(read, 2500)
+      window.addEventListener('resize', place)
+      return function () {
+        window.clearInterval(timer)
+        window.removeEventListener('resize', place)
+        for (const name of ['--lg-mark-speed-left', '--lg-mark-speed-top', '--lg-mark-ctx-left', '--lg-mark-ctx-top', '--lg-mark-ctx-height', '--lg-mark-tok-right', '--lg-mark-tok-bottom', '--lg-ctx-pct']) {
+          root.style.removeProperty(name)
+        }
+      }
+    }, [knobs.language, knobs.metrics])
 
     // Specular highlight follows the pointer across the glass.
     React.useEffect(function () {
@@ -419,17 +603,15 @@ function createOverlay(config) {
               onClick: function () { patch({ spot: spot.id }) },
             })
           }))),
-      segRow('网格', [['none', '无'], ['fine', '细'], ['bold', '粗']], knobs.grid, function (value) { return { grid: value } }),
       segRow('版心', [['wide', '宽'], ['mid', '中'], ['narrow', '窄']], knobs.measure, function (value) { return { measure: value } }),
-      segRow('分栏线', [['off', '无'], ['on', '开']], knobs.rules, function (value) { return { rules: value } }),
-      groupLabel('装饰'),
-      segRow('编号', [['off', '无'], ['01', '01'], ['02', '02'], ['03', '03']], knobs.poster, function (value) { return { poster: value } }),
-      segRow('字号', [['black', '黑体'], ['mono', '等宽'], ['serif', '衬线']], knobs.num, function (value) { return { num: value } }),
-      segRow('印章', [['on', '开'], ['off', '关']], knobs.stamp, function (value) { return { stamp: value } }),
-      segRow('母题', [['ring', '圆'], ['diagonal', '斜线'], ['none', '无']], knobs.motif, function (value) { return { motif: value } }),
-      segRow('红块', [['light', '少'], ['normal', '中'], ['strong', '多']], knobs.weight, function (value) { return { weight: value } }),
-      groupLabel('字体'),
-      segRow('字距', [['tight', '紧'], ['normal', '标准'], ['wide', '宽']], knobs.tracking, function (value) { return { tracking: value } }))
+      segRow('标尺', [['off', '无'], ['80', '80 列'], ['120', '120 列'], ['both', '双标尺']], knobs.rules, function (value) { return { rules: value } }),
+      groupLabel('阅读'),
+      segRow('字号', [['small', '小'], ['normal', '标准'], ['large', '大']], knobs.size, function (value) { return { size: value } }),
+      groupLabel('标识'),
+      segRow('编号', [['auto', '实时步数'], ['off', '无'], ['01', '01'], ['02', '02'], ['03', '03']], knobs.poster, function (value) { return { poster: value } }),
+      segRow('印章', [['clock', '时钟'], ['model', '模型'], ['off', '关']], knobs.stamp, function (value) { return { stamp: value } }),
+      segRow('状态', [['auto', '自动'], ['off', '关']], knobs.state, function (value) { return { state: value } }),
+      segRow('指标', [['on', '开'], ['off', '关']], knobs.metrics, function (value) { return { metrics: value } }))
 
     const lookTab = React.createElement('div', { className: 'lg-section' },
       languageRow,
@@ -493,9 +675,33 @@ function createOverlay(config) {
     const petVisible = knobs.petVisible && !open
     const shownLine = line || (expression === 'sleepy' ? 'zzz…' : '')
 
+    // Run metrics are printed as separate marks pinned to the surfaces they
+    // belong to (sidebar foot, composer edge, chat column rail), never as one
+    // free-floating panel.
+    const markNumber = function (value, label, sub) {
+      return React.createElement(React.Fragment, null,
+        React.createElement('span', { className: 'lg-mark-num' }, value || '—'),
+        React.createElement('span', { className: 'lg-mark-label' }, label),
+        sub ? React.createElement('span', { className: 'lg-mark-sub' }, sub) : null)
+    }
+    // Marks stay out of the way while the personalization panel is open.
+    const marks = !open && knobs.language === 'constructivist' && knobs.metrics === 'on' &&
+      React.createElement('div', { className: 'lg-marks', 'aria-hidden': 'true' },
+        React.createElement('div', { className: 'lg-mark lg-mark-steps' },
+          markNumber(metrics.steps, '步', '轮次 ' + (metrics.turns || '—'))),
+        React.createElement('div', { className: 'lg-mark lg-mark-speed' },
+          markNumber(metrics.tps, 'tok/s')),
+        // The gauge only exists when the context figure is known, so no orphan
+        // rule is ever left hanging in the margin.
+        metrics.ctx ? React.createElement('div', { className: 'lg-mark lg-mark-ctx' },
+          React.createElement('span', { className: 'lg-mark-ctx-label' }, 'CTX ' + metrics.ctx + '%')) : null,
+        React.createElement('div', { className: 'lg-mark lg-mark-tok' },
+          markNumber(metrics.total, 'tok', '缓存 ' + (metrics.cache || '—') + '%')))
+
     return React.createElement('div', { className: 'lg-layer' },
       // Column guides for the constructivist language (CSS decides visibility).
       React.createElement('div', { className: 'lg-guides', 'aria-hidden': 'true' }),
+      marks,
       React.createElement('button', {
         className: 'lg-launcher' + (open ? ' is-open' : ''),
         'aria-label': '个性化',
