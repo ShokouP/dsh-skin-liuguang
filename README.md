@@ -95,7 +95,32 @@ D:\yangchengcup\ui\revert.cmd -RestoreBackup     :: 连 profile 的 patch 一起
 
 多 profile：`apply.cmd -ProfileName web`；临时 profile 用于测试：`apply.cmd -ProfileName lab`。
 
-> 已发布到 npm：<https://www.npmjs.com/package/dsh-theme-liuguang>（当前 `0.3.0`）。
+> 已发布到 npm：<https://www.npmjs.com/package/dsh-theme-liuguang>
+
+## 发版（全自动）
+
+发布走 **npm trusted publishing（OIDC）**：不需要 token，也不需要 OTP。
+
+```bat
+:: 1. 改版本号（根 package.json 与 liuguang/package.json 保持一致）
+:: 2. 提交并打 tag，push
+git commit -am "release: v0.3.1"
+git tag v0.3.1
+git push origin main --tags
+```
+
+tag 推送后 `.github/workflows/publish.yml` 会自动：
+
+1. 校验 tag 与 `package.json` 版本一致；
+2. `npm publish --access public --provenance`（OIDC 证明身份，产出带 provenance 的包）；
+3. `npm view` 自检；
+4. 创建 GitHub Release 并附上 `.tgz`。
+
+一次性配置（只需做一次）：
+
+- npm 包页面 → **Settings → Trusted publishing → GitHub Actions**：
+  owner `ShokouP`、repo `dsh-theme-liuguang`、workflow `publish.yml`；
+- 本机 `gh auth refresh -s workflow`，让 `gh` 能推送 workflow 文件。
 
 ## 目录
 
