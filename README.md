@@ -1,5 +1,10 @@
 # 琉光 · Liuguang
 
+[![npm](https://img.shields.io/npm/v/dsh-theme-liuguang?label=npm&color=c0301c)](https://www.npmjs.com/package/dsh-theme-liuguang)
+[![stars](https://img.shields.io/github/stars/ShokouP/dsh-theme-liuguang?label=stars&color=c0301c)](https://github.com/ShokouP/dsh-theme-liuguang/stargazers)
+[![license](https://img.shields.io/github/license/ShokouP/dsh-theme-liuguang?label=license)](LICENSE)
+[![awesome-dsh](https://img.shields.io/badge/awesome-dsh--plugin-theme-c0301c)](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)
+
 **给 DeepSeek Harness（DSH）的两套设计语言皮肤：液态玻璃 / 苏联构成主义，随时切换。**
 
 English: **Liuguang** is a skin for the DeepSeek Harness GUI with two switchable design languages — liquid glass and Soviet constructivism — plus a personalization panel, drop-in CSS skin packs and a whale-girl desktop pet.
