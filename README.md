@@ -23,9 +23,9 @@ dsh plugin add dsh-theme-liuguang
 > Soviet constructivism theme · constructivist UI · 液态玻璃皮肤 · 苏联构成主义主题 ·
 > 鲸鱼娘桌宠 · desktop pet skin · 琉光主题
 
-| 液态玻璃 | 苏联构成主义 |
-|---|---|
-| ![](screenshots/glass-light.png) | ![](screenshots/constructivist-dark.png) |
+| 液态玻璃 | 苏联构成主义 | 个性化面板 |
+|---|---|---|
+| ![](screenshots/design-glass.png) | ![](screenshots/design-constructivist.png) | ![](screenshots/design-panel.png) |
 
 > 截图里左侧会话栏做了模糊处理，避免泄露个人会话标题。
 
