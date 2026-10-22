@@ -2,7 +2,15 @@
 
 **给 DeepSeek Harness（DSH）的两套设计语言皮肤：液态玻璃 / 苏联构成主义，随时切换。**
 
-> **包名（装的就是它）**：`dsh-theme-liuguang` ＋ `dsh-theme-liuguang-browser`
+English: **Liuguang** is a skin for the DeepSeek Harness GUI with two switchable design languages — liquid glass and Soviet constructivism — plus a personalization panel, drop-in CSS skin packs and a whale-girl desktop pet.
+
+```sh
+dsh plugin add dsh-theme-liuguang
+```
+
+![Liuguang demo](screenshots/demo.gif)
+
+> **包名（装的就是它）**：`dsh-theme-liuguang`
 >
 > **别名 / 搜这些词都能找到我**：
 > DSH 皮肤 · DSH 主题 · DeepSeek Harness 皮肤 · DeepSeek Harness 主题插件 ·
@@ -10,8 +18,9 @@
 > Soviet constructivism theme · constructivist UI · 液态玻璃皮肤 · 苏联构成主义主题 ·
 > 鲸鱼娘桌宠 · desktop pet skin · 琉光主题
 
-![液态玻璃](screenshots/glass-light.png)
-![苏联构成主义](screenshots/constructivist-dark.png)
+| 液态玻璃 | 苏联构成主义 |
+|---|---|
+| ![](screenshots/glass-light.png) | ![](screenshots/constructivist-dark.png) |
 
 > 截图里左侧会话栏做了模糊处理，避免泄露个人会话标题。
 
